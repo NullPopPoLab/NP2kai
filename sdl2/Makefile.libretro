@@ -78,7 +78,7 @@ else ifneq (,$(findstring rpi,$(platform)))
 
 	# Pi (original)
 	ifneq (,$(findstring rpi1,$(platform)))
-		CFLAGS += -mcpu=cortex-a6j
+		CFLAGS += -mcpu=arm1176jzf-s -mfpu=vfp -mfloat-abi=hard
 	# Pi2
 	else ifneq (,$(findstring rpi2,$(platform)))
 		CFLAGS += -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
@@ -91,6 +91,23 @@ else ifneq (,$(findstring rpi,$(platform)))
 	else ifneq (,$(findstring rpi4,$(platform)))
 		CFLAGS += -mcpu=cortex-a72 -fdata-sections -ffunction-sections -Wl,--gc-sections -fmerge-all-constants
 	endif
+
+# ROCKPRO64
+else ifneq (,$(findstring RK3399,$(platform)))
+	TARGET := $(TARGET_NAME)_libretro.so
+	fpic := -fPIC
+	SHARED := -shared -Wl,-version-script=link.T
+	CFLAGS += -fomit-frame-pointer -ffast-math -DARM -mtune=cortex-a72.cortex-a53
+	CPUFLAGS += -march=armv8-a+crc -mfloat-abi=hard -mfpu=neon-fp-armv8 -mtune=cortex-a72.cortex-a53
+
+# ODROIDN2 / VIM3
+else ifneq (,$(findstring CortexA73_G12B,$(platform)))
+	TARGET := $(TARGET_NAME)_libretro.so
+	fpic := -fPIC
+	SHARED := -shared -Wl,-version-script=link.T
+	ARCHS = arm64
+	CFLAGS += -fomit-frame-pointer -ffast-math -DARM
+	CPUFLAGS += -march=armv8-a+crc -mfpu=neon-fp-armv8 -mcpu=cortex-a73 -mtune=cortex-a73.cortex-a53
 
 # ODROIDs
 else ifneq (,$(findstring odroid,$(platform)))
