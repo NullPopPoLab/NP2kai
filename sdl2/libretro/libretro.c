@@ -91,22 +91,29 @@ static char slash = '/';
 static void update_variables(void);
 
 /* media swap support */
-struct retro_disk_control_callback dskcb;
+struct retro_disk_control_ext2_callback dskcb;
 extern char np2_main_disk_images_paths[50][MAX_PATH];
 extern unsigned int np2_main_disk_images_count;
-static unsigned drvno = 1;
+/*static unsigned drvno = 1;*/
 static unsigned disk_index = 0;
-static bool disk_inserted = false;
+static bool disk_inserted[4] = {false,false,false,false};
 static unsigned int lastidx = 0;
 
 //all the fake functions used to limit swapping to 1 disk drive
-bool setdskeject(bool ejected){
-   disk_inserted = !ejected;
+bool setdskeject(unsigned drive, bool ejected){
+   disk_inserted[drive] = !ejected;
+   if(ejected){
+      diskdrv_setfdd(drive, 0, 0);
+   }
+   else{
+/*      strcpy(np2cfg.fddfile[drive], np2_main_disk_images_paths[disk_index]);*/
+      diskdrv_setfdd(drive, np2_main_disk_images_paths[disk_index], 0);
+   }
    return true;
 }
 
-bool getdskeject(){
-   return !disk_inserted;
+bool getdskeject(unsigned drive){
+   return !disk_inserted[drive];
 }
 
 unsigned getdskindex(){
@@ -115,6 +122,7 @@ unsigned getdskindex(){
 
 bool setdskindex(unsigned index){
    disk_index = index;
+#if 0
    if(disk_index == np2_main_disk_images_count)
    {
       //retroarch is trying to set "no disk in tray"
@@ -124,7 +132,12 @@ bool setdskindex(unsigned index){
    update_variables();
    strcpy(np2cfg.fddfile[drvno], np2_main_disk_images_paths[disk_index]);
    diskdrv_setfdd(drvno, np2_main_disk_images_paths[disk_index], 0);
+#endif
    return true;
+}
+
+unsigned getnumdrives(){
+   return 4;
 }
 
 unsigned getnumimages(){
@@ -146,18 +159,20 @@ bool replacedsk(unsigned index,const struct retro_game_info *info){
 
 void attach_disk_swap_interface(){
    //these functions are unused
-   dskcb.set_eject_state = setdskeject;
-   dskcb.get_eject_state = getdskeject;
+   dskcb.set_drive_eject_state = setdskeject;
+   dskcb.get_drive_eject_state = getdskeject;
    dskcb.set_image_index = setdskindex;
    dskcb.get_image_index = getdskindex;
+   dskcb.get_num_drives  = getnumdrives;
    dskcb.get_num_images  = getnumimages;
    dskcb.add_image_index = addimageindex;
    dskcb.replace_image_index = replacedsk;
-   if(np2_main_disk_images_count) {
-      disk_inserted = true;
-   }
+   disk_inserted[0] = np2_main_disk_images_count>0;
+   disk_inserted[1] = np2_main_disk_images_count>1;
+   disk_inserted[2] = false;
+   disk_inserted[3] = false;
 
-   environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE,&dskcb);
+   environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT2_INTERFACE,&dskcb);
 }
 
 void setnxtdskindex(void){
@@ -856,6 +871,7 @@ static void update_variables(void)
    var.key = "np2kai_drive";
    var.value = NULL;
 
+#if 0
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "FDD1") == 0)
@@ -863,6 +879,7 @@ static void update_variables(void)
       else if (strcmp(var.value, "FDD2") == 0)
          drvno = 1;
    }
+#endif
 
    var.key = "np2kai_keyboard";
    var.value = NULL;
