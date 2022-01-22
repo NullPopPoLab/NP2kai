@@ -162,7 +162,7 @@ static bool disk_get_image_path(unsigned index, char *path, size_t len)
    if (len < 1)
       return false;
 
-      if (!string_is_empty(retro_disks[index].filename))
+      if (np2_main_disk_images_paths[index][0])
       {
          strncpy(path, np2_main_disk_images_paths[index], len);
          return true;
@@ -176,7 +176,7 @@ static bool disk_get_image_label(unsigned index, char *label, size_t len)
    if (len < 1)
       return false;
 
-      if (!string_is_empty(retro_disks[index].filename))
+      if (np2_main_disk_images_paths[index][0])
       {
          strncpy(label, np2_main_disk_images_paths[index], len);
          return true;
