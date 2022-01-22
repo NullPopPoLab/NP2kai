@@ -157,6 +157,34 @@ bool replacedsk(unsigned index,const struct retro_game_info *info){
    return true;
 }
 
+static bool disk_get_image_path(unsigned index, char *path, size_t len)
+{
+   if (len < 1)
+      return false;
+
+      if (!string_is_empty(retro_disks[index].filename))
+      {
+         strncpy(path, np2_main_disk_images_paths[index], len);
+         return true;
+      }
+
+   return false;
+}
+
+static bool disk_get_image_label(unsigned index, char *label, size_t len)
+{
+   if (len < 1)
+      return false;
+
+      if (!string_is_empty(retro_disks[index].filename))
+      {
+         strncpy(label, np2_main_disk_images_paths[index], len);
+         return true;
+      }
+
+   return false;
+}
+
 void attach_disk_swap_interface(){
    //these functions are unused
    dskcb.set_drive_eject_state = setdskeject;
@@ -167,6 +195,8 @@ void attach_disk_swap_interface(){
    dskcb.get_num_images  = getnumimages;
    dskcb.add_image_index = addimageindex;
    dskcb.replace_image_index = replacedsk;
+   dskcb.get_image_path = disk_get_image_path;
+   dskcb.get_image_label = disk_get_image_label;
    disk_inserted[0] = np2_main_disk_images_count>0;
    disk_inserted[1] = np2_main_disk_images_count>1;
    disk_inserted[2] = false;
