@@ -176,11 +176,16 @@ static bool disk_get_image_label(unsigned index, char *label, size_t len)
    if (len < 1)
       return false;
 
-      if (np2_main_disk_images_paths[index][0])
-      {
-         strncpy(label, np2_main_disk_images_paths[index], len);
-         return true;
-      }
+		if (np2_main_disk_images_paths[index][0])
+		{
+			const char* c;
+			for(c=np2_main_disk_images_paths[index];*c;++c);
+			for(;c>np2_main_disk_images_paths[index];--c){
+				if(c[-1]=='/')break;
+			}
+			strncpy(label, c, len);
+			return true;
+		}
 
    return false;
 }
