@@ -427,21 +427,65 @@ static int s2m_no;
 static uint8_t s2m_shift;
 static BOOL abKeyStat[0x200];
 
-static int j2k_pad[12] = { 
+static int j2k_pad[27] = { 
    RETRO_DEVICE_ID_JOYPAD_UP,
    RETRO_DEVICE_ID_JOYPAD_DOWN,
    RETRO_DEVICE_ID_JOYPAD_LEFT,
    RETRO_DEVICE_ID_JOYPAD_RIGHT,
    RETRO_DEVICE_ID_JOYPAD_A,
    RETRO_DEVICE_ID_JOYPAD_B,
+   RETRO_DEVICE_ID_JOYPAD_C,
    RETRO_DEVICE_ID_JOYPAD_X,
    RETRO_DEVICE_ID_JOYPAD_Y,
+   RETRO_DEVICE_ID_JOYPAD_Z,
    RETRO_DEVICE_ID_JOYPAD_L,
    RETRO_DEVICE_ID_JOYPAD_R,
+   RETRO_DEVICE_ID_JOYPAD_L2,
+   RETRO_DEVICE_ID_JOYPAD_R2,
+   RETRO_DEVICE_ID_JOYPAD_L3,
+   RETRO_DEVICE_ID_JOYPAD_R3,
    RETRO_DEVICE_ID_JOYPAD_SELECT,
-   RETRO_DEVICE_ID_JOYPAD_START
+   RETRO_DEVICE_ID_JOYPAD_START,
+   RETRO_DEVICE_ID_JOYPAD_MENU,
+   RETRO_DEVICE_ID_JOYPAD_LEFT_ANALOG_RIGHT,
+   RETRO_DEVICE_ID_JOYPAD_LEFT_ANALOG_LEFT,
+   RETRO_DEVICE_ID_JOYPAD_LEFT_ANALOG_DOWN,
+   RETRO_DEVICE_ID_JOYPAD_LEFT_ANALOG_UP,
+   RETRO_DEVICE_ID_JOYPAD_RIGHT_ANALOG_RIGHT,
+   RETRO_DEVICE_ID_JOYPAD_RIGHT_ANALOG_LEFT,
+   RETRO_DEVICE_ID_JOYPAD_RIGHT_ANALOG_DOWN,
+   RETRO_DEVICE_ID_JOYPAD_RIGHT_ANALOG_UP,
 };
-static uint16_t j2k_key[12];
+static uint16_t j2k_key[27] = {
+   RETROK_KP8,
+   RETROK_KP2,
+   RETROK_KP4,
+   RETROK_KP6,
+   RETROK_x,
+   RETROK_z,
+   RETROK_SPACE,
+   RETROK_F3,
+   RETROK_F2,
+   RETROK_F1,
+   RETROK_ESCAPE,
+   RETROK_F4,
+   RETROK_RETURN,
+   RETROK_F5,
+   RETROK_LSHIFT,
+   RETROK_LCTRL,
+   RETROK_HOME,
+   RETROK_END, /*HELP*/
+   RETROK_RCTRL, /*GRPH*/
+   RETROK_RIGHT,
+   RETROK_LEFT,
+   RETROK_DOWN,
+   RETROK_UP,
+   RETROK_d,
+   RETROK_a,
+   RETROK_s,
+   RETROK_w,
+};
+#if 0
 static uint16_t j2k_key_arrow[12] = { 
    RETROK_UP,
    RETROK_DOWN,
@@ -498,6 +542,7 @@ static uint16_t j2k_key_kpad3[12] = {
    RETROK_ESCAPE,
    RETROK_RETURN
 };
+#endif
 
 void resetInput(void) {
   int i;
@@ -556,20 +601,8 @@ void updateInput(){
   // --- input key
   int input;
 
-  // Joy2Key
-  if(m_tJoyMode == LR_NP2KAI_JOYMODE_KEY) {
-    for(i = 0; i < 12; i++) {
-      input = input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i]);
-      if(input && !abKeyStat[j2k_key[i]]) {
-        send_libretro_key_down(j2k_key[i]);
-        abKeyStat[j2k_key[i]] = TRUE;
-      } else if(!input && abKeyStat[j2k_key[i]]) {
-        send_libretro_key_up(j2k_key[i]);
-        abKeyStat[j2k_key[i]] = FALSE;
-      }
-    }
   // keyboard
-  } else {
+  {
     for(i = 0; i < keys_needed; i++) {
       input = input_cb(0, RETRO_DEVICE_KEYBOARD, 0, keys_poll[i].lrkey);
       if(input && !abKeyStat[keys_poll[i].lrkey]) {
@@ -581,6 +614,19 @@ void updateInput(){
       }
     }
   }
+
+  // Joy2Key
+  /*if(m_tJoyMode == LR_NP2KAI_JOYMODE_KEY)*/ {
+    for(i = 0; i < 27; i++) {
+      input = input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i]);
+      if(input && !abKeyStat[j2k_key[i]]) {
+        send_libretro_key_down(j2k_key[i]);
+        abKeyStat[j2k_key[i]] |= TRUE;
+      }/* else if(!input && abKeyStat[j2k_key[i]]) {
+        send_libretro_key_up(j2k_key[i]);
+        abKeyStat[j2k_key[i]] = FALSE;
+      }*/
+    }
 
   // --- move mouse
 
@@ -1406,6 +1452,7 @@ static void update_variables(void)
     }
   }
 
+#if 0
   var.key = "np2kai_joymode";
   var.value = NULL;
   if(environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
@@ -1444,6 +1491,7 @@ static void update_variables(void)
       m_bJoyModeChange = TRUE;
     }
   }
+#endif
 
   var.key = "np2kai_joynp2menu";
   var.value = NULL;
@@ -1546,6 +1594,38 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
 
 void retro_init (void)
 {
+	static struct retro_input_descriptor desc[] = {
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "NumPad 6" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "NumPad 4" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "NumPad 2" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "NumPad 8" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "X" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Z" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_C, "Space" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "F3" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "F2" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Z, "F1" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Clr" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Help" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "F4" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "Esc" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "F5" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "Return" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "Ctrl" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3, "Shift" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MENU, "Graph" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT_ANALOG_RIGHT, "Key Right" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT_ANALOG_LEFT, "Key Left" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT_ANALOG_DOWN, "Key Down" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT_ANALOG_UP, "Key Up" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT_ANALOG_RIGHT, "D" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT_ANALOG_LEFT, "A" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT_ANALOG_DOWN, "S" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT_ANALOG_UP, "W" },
+
+		{ 0, 0, 0, 0, NULL }
+	};
+
    enum retro_pixel_format rgb;
 
    scrnmng_initialize();
@@ -1581,6 +1661,8 @@ void retro_init (void)
    }
    if(environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &rgb) && log_cb)
          log_cb(RETRO_LOG_INFO, "Frontend supports RGB565 (or XRGB8888).\n");
+
+   environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
 }
 
 void retro_deinit(void)
