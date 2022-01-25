@@ -427,7 +427,7 @@ static int s2m_no;
 static uint8_t s2m_shift;
 static BOOL abKeyStat[0x200];
 
-static int j2k_pad[27] = { 
+static int j2k_pad[26] = { 
    RETRO_DEVICE_ID_JOYPAD_UP,
    RETRO_DEVICE_ID_JOYPAD_DOWN,
    RETRO_DEVICE_ID_JOYPAD_LEFT,
@@ -446,7 +446,6 @@ static int j2k_pad[27] = {
    RETRO_DEVICE_ID_JOYPAD_R3,
    RETRO_DEVICE_ID_JOYPAD_SELECT,
    RETRO_DEVICE_ID_JOYPAD_START,
-   RETRO_DEVICE_ID_JOYPAD_MENU,
    RETRO_DEVICE_ID_JOYPAD_LEFT_ANALOG_RIGHT,
    RETRO_DEVICE_ID_JOYPAD_LEFT_ANALOG_LEFT,
    RETRO_DEVICE_ID_JOYPAD_LEFT_ANALOG_DOWN,
@@ -456,7 +455,7 @@ static int j2k_pad[27] = {
    RETRO_DEVICE_ID_JOYPAD_RIGHT_ANALOG_DOWN,
    RETRO_DEVICE_ID_JOYPAD_RIGHT_ANALOG_UP,
 };
-static uint16_t j2k_key[27] = {
+static uint16_t j2k_key[26] = {
    RETROK_KP8,
    RETROK_KP2,
    RETROK_KP4,
@@ -475,7 +474,6 @@ static uint16_t j2k_key[27] = {
    RETROK_LCTRL,
    RETROK_HOME,
    RETROK_END, /*HELP*/
-   RETROK_RCTRL, /*GRPH*/
    RETROK_RIGHT,
    RETROK_LEFT,
    RETROK_DOWN,
@@ -617,7 +615,7 @@ void updateInput(){
 
   // Joy2Key
   /*if(m_tJoyMode == LR_NP2KAI_JOYMODE_KEY) {*/
-    for(i = 0; i < 27; i++) {
+    for(i = 0; i < 26; i++) {
       input = input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i]);
       if(input && !abKeyStat[j2k_key[i]]) {
         send_libretro_key_down(j2k_key[i]);
@@ -1491,7 +1489,6 @@ static void update_variables(void)
       m_bJoyModeChange = TRUE;
     }
   }
-#endif
 
   var.key = "np2kai_joynp2menu";
   var.value = NULL;
@@ -1536,6 +1533,9 @@ static void update_variables(void)
       joyNP2menu = FALSE;
     }
   }
+#endif
+      joyNP2menu = TRUE;
+      joyNP2menubtn = RETRO_DEVICE_ID_JOYPAD_MENU;
 
    var.key = "np2kai_lcd";
    var.value = NULL;
