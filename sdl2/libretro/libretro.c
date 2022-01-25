@@ -616,7 +616,7 @@ void updateInput(){
   }
 
   // Joy2Key
-  /*if(m_tJoyMode == LR_NP2KAI_JOYMODE_KEY)*/ {
+  /*if(m_tJoyMode == LR_NP2KAI_JOYMODE_KEY) {*/
     for(i = 0; i < 27; i++) {
       input = input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i]);
       if(input && !abKeyStat[j2k_key[i]]) {
