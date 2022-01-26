@@ -236,11 +236,126 @@ static const LRKCNV lrcnv106[] = {
   {RETROK_KP_ENTER,     0x1c},  // KPEnter
 };
 
+/* completely key table */
+static const LRKCNV lrcnv_full[] = {
+  // test result on Linux Twocode/caNnotpush/Miss/Different
+  {RETROK_PAUSE,        0x60},  // STOP
+  {RETROK_PRINT,        0x61},  // COPY
+  {RETROK_F1,           0x62},  // f.1
+  {RETROK_F2,           0x63},  // f.2
+  {RETROK_F3,           0x64},  // f.3
+  {RETROK_F4,           0x65},  // f.4
+  {RETROK_F5,           0x66},  // f.5
+  {RETROK_F6,           0x67},  // f.6
+  {RETROK_F7,           0x68},  // f.7
+  {RETROK_F8,           0x69},  // f.8
+  {RETROK_F9,           0x6a},  // f.9
+  {RETROK_F10,          0x6b},  // f.10
+  {RETROK_F11,          0x52},  // vf.1
+  {RETROK_F12,          0x53},  // vf.2
+  {RETROK_F13,          0x54},  // vf.3
+  {RETROK_F14,          0x55},  // vf.4
+  {RETROK_F15,          0x56},  // vf.5
+  {RETROK_ESCAPE,       0x00},  // ESC
+  {RETROK_1,            0x01},  // 1 !
+  {RETROK_2,            0x02},  // 2 "
+  {RETROK_3,            0x03},  // 3 #
+  {RETROK_4,            0x04},  // 4 $
+  {RETROK_5,            0x05},  // 5 %
+  {RETROK_6,            0x06},  // 6 &
+  {RETROK_7,            0x07},  // 7 '
+  {RETROK_8,            0x08},  // 8 (
+  {RETROK_9,            0x09},  // 9 )
+  {RETROK_0,            0x0a},  // 0 0
+  {RETROK_MINUS,        0x0b},  // - =
+  {RETROK_EQUALS,       0x0c},  // ^ `
+  {RETROK_BACKSLASH,    0x0d},  // Yen | (M)
+  {RETROK_BACKSPACE,    0x0e},  // BS
+  {RETROK_TAB,          0x0f},  // TAB
+  {RETROK_q,            0x10},  // q Q
+  {RETROK_w,            0x11},  // w W
+  {RETROK_e,            0x12},  // e E
+  {RETROK_r,            0x13},  // r R
+  {RETROK_t,            0x14},  // t T
+  {RETROK_y,            0x15},  // y Y
+  {RETROK_u,            0x16},  // u U
+  {RETROK_i,            0x17},  // i I
+  {RETROK_o,            0x18},  // o O
+  {RETROK_p,            0x19},  // p P
+  {RETROK_AT,           0x1a},  // @ ~
+  {RETROK_LEFTBRACKET,  0x1b},  // [ {
+  {RETROK_RETURN,       0x1c},  // Enter
+  {RETROK_LCTRL,        0x74},  // CTRL
+  {RETROK_CAPSLOCK,     0x71},  // CAPS
+  {RETROK_a,            0x1d},  // a A
+  {RETROK_s,            0x1e},  // s S
+  {RETROK_d,            0x1f},  // d D
+  {RETROK_f,            0x20},  // f F
+  {RETROK_g,            0x21},  // g G
+  {RETROK_h,            0x22},  // h H
+  {RETROK_j,            0x23},  // j J
+  {RETROK_k,            0x24},  // k K
+  {RETROK_l,            0x25},  // l L
+  {RETROK_SEMICOLON,    0x26},  // ; +
+  {RETROK_QUOTE,        0x27},  // : *
+  {RETROK_RIGHTBRACKET, 0x28},  // ] }
+  {RETROK_LSHIFT,       0x70},  // LShift
+  {RETROK_z,            0x29},  // z Z
+  {RETROK_x,            0x2a},  // x X
+  {RETROK_c,            0x2b},  // c C
+  {RETROK_v,            0x2c},  // v V
+  {RETROK_b,            0x2d},  // b B
+  {RETROK_n,            0x2e},  // n N
+  {RETROK_m,            0x2f},  // m M
+  {RETROK_COMMA,        0x30},  // , <
+  {RETROK_PERIOD,       0x31},  // . >
+  {RETROK_SLASH,        0x32},  // / ?
+  {RETROK_UNDERSCORE,   0x33},  // _ _
+  {RETROK_RSHIFT,       0x75},  // RShift
+  {RETROK_KANA,         0x72},  // Kana
+  {RETROK_LSUPER,       0x70},  // LSuper
+  {RETROK_RCTRL,        0x33},  // GRPH
+  {RETROK_LALT,         0x51},  // NFER
+  {RETROK_SPACE,        0x34},  // Space
+  {RETROK_RALT,         0x35},  // XFER
+  {RETROK_RSUPER,       0x78},  // RSuper
+  {RETROK_MENU,         0x79},  // Menu
+  {RETROK_INSERT,       0x38},  // INS
+  {RETROK_DELETE,       0x39},  // DEL
+  {RETROK_PAGEUP,       0x36},  // ROLLUP
+  {RETROK_PAGEDOWN,     0x37},  // ROLLDOWN
+  {RETROK_UP,           0x3a},  // Up
+  {RETROK_LEFT,         0x3b},  // Left
+  {RETROK_RIGHT,        0x3c},  // Right
+  {RETROK_DOWN,         0x3d},  // Down
+  {RETROK_HOME,         0x3e},  // HOME/CLR
+  {RETROK_END,          0x3f},  // HELP
+  {RETROK_KP_MINUS,     0x40},  // KP-
+  {RETROK_KP_DIVIDE,    0x41},  // KP/
+  {RETROK_KP7,          0x42},  // KP7
+  {RETROK_KP8,          0x43},  // KP8
+  {RETROK_KP9,          0x44},  // KP9
+  {RETROK_KP_MULTIPLY,  0x45},  // KP*
+  {RETROK_KP4,          0x46},  // KP4
+  {RETROK_KP5,          0x47},  // KP5
+  {RETROK_KP6,          0x48},  // KP6
+  {RETROK_KP_PLUS,      0x49},  // KP+
+  {RETROK_KP1,          0x4a},  // KP1
+  {RETROK_KP2,          0x4b},  // KP2
+  {RETROK_KP3,          0x4c},  // KP3
+  {RETROK_KP_EQUALS,    0x4d},  // KP= (N)
+  {RETROK_KP0,          0x4e},  // KP0
+  {RETROK_KP_COMMA,     0x4e},  // KP,
+  {RETROK_KP_PERIOD,    0x50},  // KP. (M)
+  {RETROK_KP_ENTER,     0x1c},  // KPEnter
+};
+
 LRKCNV* keys_poll;
 uint16_t keys_needed;
 
 void init_lrkey_to_pc98() {
   memset(key_states, 0, sizeof(key_states));
+#if 0
   if(np2oscfg.KEYBOARD == KEY_KEY101) {
     keys_poll = (LRKCNV*)lrcnv101;
     keys_needed = sizeof(lrcnv101) / sizeof(LRKCNV);
@@ -248,6 +363,9 @@ void init_lrkey_to_pc98() {
     keys_poll = (LRKCNV*)lrcnv106;
     keys_needed = sizeof(lrcnv106) / sizeof(LRKCNV);
   }
+#endif
+    keys_poll = (LRKCNV*)lrcnv_full;
+    keys_needed = sizeof(lrcnv_full) / sizeof(LRKCNV);
 }
 
 void reset_lrkey() {
