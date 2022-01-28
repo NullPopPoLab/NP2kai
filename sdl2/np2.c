@@ -52,6 +52,8 @@
 extern bool ADVANCED_M3U;
 extern int ADVANCED_FD1;
 extern int ADVANCED_FD2;
+extern bool ADVANCED_FD1_RO;
+extern bool ADVANCED_FD2_RO;
 
 static const char appname[] =
 #if defined(CPUCORE_IA32)
@@ -130,6 +132,7 @@ char draw32bit;
 unsigned int np2_main_disk_images_count = 0;
 static unsigned int np2_main_cd_images_count = 0;
 OEMCHAR np2_main_disk_images_paths[50][MAX_PATH] = {0};
+bool np2_main_disk_images_ro[50] = {0};
 static OEMCHAR np2_main_cd_images_paths[5][MAX_PATH] = {0};
 static unsigned int np2_main_cd_drv[5] = {0xF, 0xF, 0xF, 0xF, 0xF};
 
@@ -400,20 +403,25 @@ char np2_main_read_m3u(const char *file)
 		if(*p && *p!=';')typ=*p++;
 		else typ=0;
 		if(*p && *p!=';')num=*p++;
-		else num=0;
-		if(*p=='!')rof=*p++;
+		else num='0';
+		if(*p=='!'){rof=1; ++p;}
 		else rof=0;
 		if(*p==';')++p;
 
 		switch(typ){
 			case 'F': /* floppy drive */
 			switch(num){
+				case '0': /* undrived floppy */
+				break;
+
 				case '1': /* 1st floppy drive */
 				if(*p)ADVANCED_FD1=np2_main_disk_images_count;
+				ADVANCED_FD1_RO=rof;
 				break;
 
 				case '2': /* 2nd floppy drive */
 				if(*p)ADVANCED_FD2=np2_main_disk_images_count;
+				ADVANCED_FD2_RO=rof;
 				break;
 			}
 			break;
@@ -441,6 +449,7 @@ char np2_main_read_m3u(const char *file)
       }
       if(np2_isfdimage(name, OEMSTRLEN(name))) {
         milstr_ncpy(np2_main_disk_images_paths[np2_main_disk_images_count], name, MAX_PATH);
+        np2_main_disk_images_ro[np2_main_disk_images_count]=rof;
         np2_main_disk_images_count++;
       }
     }
@@ -699,8 +708,8 @@ int np2_main(int argc, char *argv[]) {
 
 	drvfdd = 0;
 	if(ADVANCED_M3U){
-		if(ADVANCED_FD1>=0)diskdrv_setfdd(0, np2_main_disk_images_paths[ADVANCED_FD1], 0);
-		if(ADVANCED_FD2>=0)diskdrv_setfdd(0, np2_main_disk_images_paths[ADVANCED_FD2], 0);
+		if(ADVANCED_FD1>=0)diskdrv_setfdd(0, np2_main_disk_images_paths[ADVANCED_FD1], ADVANCED_FD1_RO);
+		if(ADVANCED_FD2>=0)diskdrv_setfdd(0, np2_main_disk_images_paths[ADVANCED_FD2], ADVANCED_FD2_RO);
 	}
 	else{
 		for (i = 0; i < np2_main_disk_images_count; i++) {
