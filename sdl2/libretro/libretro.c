@@ -59,6 +59,10 @@ extern void sdlaudio_callback(void *userdata, unsigned char *stream, int len);
 
 signed short soundbuf[SNDSZ*2]; //16bit*2ch
 
+bool ADVANCED_M3U=FALSE;
+int ADVANCED_FD1=-1;
+int ADVANCED_FD2=-1;
+
 char RPATH[512];
 OEMCHAR tmppath[MAX_PATH];
 

@@ -49,6 +49,10 @@
 #endif
 #include	"np2_tickcount.h"
 
+extern bool ADVANCED_M3U;
+extern int ADVANCED_FD1;
+extern int ADVANCED_FD2;
+
 static const char appname[] =
 #if defined(CPUCORE_IA32)
     "np21kai"
@@ -367,30 +371,73 @@ char np2_main_read_m3u(const char *file)
   while (fgets(f, line, sizeof(line)) && np2_main_disk_images_count < sizeof(np2_main_disk_images_paths) / MAX_PATH)
 #endif
   {
-    if (line[0] == '#')
+	char typ,num,rof;
+    const char* p=line;
+
+    if (p[0] == '#')
       continue;
 
-    char *carriage_return = strchr(line, '\r');
+    char *carriage_return = strchr(p, '\r');
     if (carriage_return)
       *carriage_return = '\0';
 
-    char *newline = strchr(line, '\n');
+    char *newline = strchr(p, '\n');
     if (newline)
       *newline = '\0';
 
     // Remove any beginning and ending quotes as these can cause issues when feeding the paths into command line later
-    if (line[0] == '"')
-       memmove(line, line + 1, OEMSTRLEN(line));
+    if (p[0] == '"')
+       memmove(p, p + 1, OEMSTRLEN(p));
 
-    if (line[OEMSTRLEN(line) - 1] == '"')
-       line[OEMSTRLEN(line) - 1]  = '\0';
+    if (p[OEMSTRLEN(p) - 1] == '"')
+       p[OEMSTRLEN(p) - 1]  = '\0';
 
-    if (OEMSTRLEN(line) > 4)
+	if(*p=='*'){
+		// advanced mark 
+		ADVANCED_M3U=TRUE;
+		++p;
+
+		if(*p && *p!=';')typ=*p++;
+		else typ=0;
+		if(*p && *p!=';')num=*p++;
+		else num=0;
+		if(*p=='!')rof=*p++;
+		else rof=0;
+		if(*p==';')++p;
+
+		switch(typ){
+			case 'F': /* floppy drive */
+			switch(num){
+				case '1': /* 1st floppy drive */
+				if(*p)ADVANCED_FD1=np2_main_disk_images_count;
+				break;
+
+				case '2': /* 2nd floppy drive */
+				if(*p)ADVANCED_FD2=np2_main_disk_images_count;
+				break;
+			}
+			break;
+
+			case 'T': /* tape drive */
+			break;
+
+			case 'R': /* ROM slot */
+			break;
+
+			case 'H': /* hard drive */
+			break;
+
+			case 'O': /* optical drive */
+			break;
+		}
+	}
+
+    if (OEMSTRLEN(p) > 4)
     {
       milstr_ncpy(name, line, MAX_PATH);
-      if(line[0] != '/' && line[1] != ':' && (line[0] != '\\' && line[1] != '\\')) {
+      if(p[0] != '/' && p[1] != ':' && (p[0] != '\\' && p[1] != '\\')) {
         milstr_ncpy(name, base_dir, MAX_PATH);
-        milstr_ncat(name, line, MAX_PATH);
+        milstr_ncat(name, p, MAX_PATH);
       }
       if(np2_isfdimage(name, OEMSTRLEN(name))) {
         milstr_ncpy(np2_main_disk_images_paths[np2_main_disk_images_count], name, MAX_PATH);
@@ -651,9 +698,15 @@ int np2_main(int argc, char *argv[]) {
 	}
 
 	drvfdd = 0;
-	for (i = 0; i < np2_main_disk_images_count; i++) {
-		if (i < 2) {
-			diskdrv_setfdd(i, np2_main_disk_images_paths[i], 0);
+	if(ADVANCED_M3U){
+		if(ADVANCED_FD1>=0)diskdrv_setfdd(0, np2_main_disk_images_paths[ADVANCED_FD1], 0);
+		if(ADVANCED_FD2>=0)diskdrv_setfdd(0, np2_main_disk_images_paths[ADVANCED_FD2], 0);
+	}
+	else{
+		for (i = 0; i < np2_main_disk_images_count; i++) {
+			if (i < 2) {
+				diskdrv_setfdd(i, np2_main_disk_images_paths[i], 0);
+			}
 		}
 	}
 
