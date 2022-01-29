@@ -339,6 +339,69 @@ char np2_isfdimage(const char *file, const int len) {
   return fd;
 }
 
+char np2_iscdimage(const char *file, const int len) {
+  char cd = 0;
+  char* ext;
+
+  if(len > 4) {
+    ext = file + len - 4;
+    if      (milstr_cmp(ext, ".iso") == 0) cd = 1;
+    else if (milstr_cmp(ext, ".cue") == 0) cd = 1;
+    else if (milstr_cmp(ext, ".ccd") == 0) cd = 1;
+    else if (milstr_cmp(ext, ".mds") == 0) cd = 1;
+    else if (milstr_cmp(ext, ".nrg") == 0) cd = 1;
+  }
+
+  return cd;
+}
+
+char np2_ishdimage(const char *file, const int len) {
+  char hd = 0;
+  char* ext;
+
+  if(len > 4) {
+    ext = file + len - 4;
+    if      (milstr_cmp(ext, ".hdi") == 0) hd = 1;
+    else if (milstr_cmp(ext, ".thd") == 0) hd = 1;
+    else if (milstr_cmp(ext, ".nhd") == 0) hd = 1;
+    else if (milstr_cmp(ext, ".vhd") == 0) hd = 1;
+    else if (milstr_cmp(ext, ".sln") == 0) hd = 1;
+    else if (milstr_cmp(ext, ".hdd") == 0) hd = 1;
+    else if (milstr_cmp(ext, ".hdn") == 0) hd = 1;
+  }
+
+  return hd;
+}
+
+char np2_ishdimage_sasi(const char *file, const int len) {
+  char hd = 0;
+  char* ext;
+
+  if(len > 4) {
+    ext = file + len - 4;
+    if      (milstr_cmp(ext, ".hdi") == 0) hd = 1;
+    else if (milstr_cmp(ext, ".thd") == 0) hd = 1;
+    else if (milstr_cmp(ext, ".nhd") == 0) hd = 1;
+    else if (milstr_cmp(ext, ".vhd") == 0) hd = 1;
+    else if (milstr_cmp(ext, ".sln") == 0) hd = 1;
+  }
+
+  return hd;
+}
+
+char np2_ishdimage_sasi(const char *file, const int len) {
+  char hd = 0;
+  char* ext;
+
+  if(len > 4) {
+    ext = file + len - 4;
+    if (milstr_cmp(ext, ".hdd") == 0) hd = 1;
+    else if (milstr_cmp(ext, ".hdn") == 0) hd = 1;
+  }
+
+  return hd;
+}
+
 char np2_main_read_m3u(const char *file)
 {
   char res = 0;
@@ -376,6 +439,8 @@ char np2_main_read_m3u(const char *file)
   {
 	char typ,num,rof;
     char* p=line;
+	int cdidx=0;
+	int hdidx=0;
 
     if (p[0] == '#')
       continue;
@@ -408,21 +473,31 @@ char np2_main_read_m3u(const char *file)
 		else rof=0;
 		if(*p==';')++p;
 
+		if (OEMSTRLEN(p) <= 4) continue;
+
+		milstr_ncpy(name, line, MAX_PATH);
+		if(p[0] != '/' && p[1] != ':' && (p[0] != '\\' && p[1] != '\\')) {
+			milstr_ncpy(name, base_dir, MAX_PATH);
+			milstr_ncat(name, p, MAX_PATH);
+		}
+
 		switch(typ){
 			case 'F': /* floppy drive */
-			switch(num){
-				case '0': /* undrived floppy */
-				break;
+			if(np2_isfdimage(name, OEMSTRLEN(name))) {
+				switch(num){
+					case '1': /* 1st floppy drive */
+					ADVANCED_FD1=np2_main_disk_images_count;
+					ADVANCED_FD1_RO=rof;
+					break;
 
-				case '1': /* 1st floppy drive */
-				if(*p)ADVANCED_FD1=np2_main_disk_images_count;
-				ADVANCED_FD1_RO=rof;
-				break;
-
-				case '2': /* 2nd floppy drive */
-				if(*p)ADVANCED_FD2=np2_main_disk_images_count;
-				ADVANCED_FD2_RO=rof;
-				break;
+					case '2': /* 2nd floppy drive */
+					ADVANCED_FD2=np2_main_disk_images_count;
+					ADVANCED_FD2_RO=rof;
+					break;
+				}
+				milstr_ncpy(np2_main_disk_images_paths[np2_main_disk_images_count], name, MAX_PATH);
+				np2_main_disk_images_ro[np2_main_disk_images_count]=rof;
+				np2_main_disk_images_count++;
 			}
 			break;
 
@@ -433,14 +508,53 @@ char np2_main_read_m3u(const char *file)
 			break;
 
 			case 'H': /* hard drive */
+#if defined(SUPPORT_IDEIO) || defined(SUPPORT_SASI)
+			if(np2_ishdimage_sasi(name, OEMSTRLEN(name))) {
+				for(; hdidx < 4; hdidx++) {
+					if(np2cfg.idetype[hdidx] == SXSIDEV_HDD) {
+						if(!(setmedia & (1 << hdidx))) {
+							milstr_ncpy(np2cfg.sasihdd[hdidx], name, MAX_PATH);
+							setmedia |= 1 << hdidx;
+							HDCount++;
+							++hdidx;
+							break;
+						}
+					}
+				}
+			}
+#endif
+#if defined(SUPPORT_SCSI)
+			if(np2_ishdimage_scsi(name, OEMSTRLEN(name))) {
+				if(drvhddSCSI < 4) {
+					milstr_ncpy(np2cfg.scsihdd[drvhddSCSI], fullpath, MAX_PATH);
+					drvhddSCSI++;
+				}
+			}
+#endif
 			break;
 
 			case 'O': /* optical drive */
+#if defined(SUPPORT_IDEIO) || defined(SUPPORT_SASI)
+			if(np2_iscdimage(name, OEMSTRLEN(name))) {
+				if(np2_main_cd_images_count < sizeof(np2_main_cd_images_paths) / MAX_PATH) {
+					milstr_ncpy(np2_main_cd_images_paths[np2_main_cd_images_count], fullpath, MAX_PATH);
+					for(; cdidx < 4; cdidx++) {
+						if(np2cfg.idetype[cdidx] == SXSIDEV_CDROM) {
+							if(!(setmedia & (1 << cdidx))) {
+								np2_main_cd_drv[np2_main_cd_images_count] = cdidx;
+								setmedia |= 1 << cdidx;
+							}
+							break;
+						}
+					}
+					np2_main_cd_images_count++;
+				}
+			}
+#endif
 			break;
 		}
 	}
-
-    if (OEMSTRLEN(p) > 4)
+    else if (OEMSTRLEN(p) > 4)
     {
       milstr_ncpy(name, line, MAX_PATH);
       if(p[0] != '/' && p[1] != ':' && (p[0] != '\\' && p[1] != '\\')) {
