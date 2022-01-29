@@ -442,6 +442,7 @@ char np2_main_read_m3u(const char *file)
 	int cdidx=0;
 	int hdidx=0;
 	int scsiidx=0;
+	int setmedia=0;
 
     if (p[0] == '#')
       continue;
