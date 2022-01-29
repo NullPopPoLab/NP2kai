@@ -389,7 +389,7 @@ char np2_ishdimage_sasi(const char *file, const int len) {
   return hd;
 }
 
-char np2_ishdimage_sasi(const char *file, const int len) {
+char np2_ishdimage_scsi(const char *file, const int len) {
   char hd = 0;
   char* ext;
 
