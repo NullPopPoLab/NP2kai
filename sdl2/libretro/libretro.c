@@ -59,6 +59,12 @@ extern void sdlaudio_callback(void *userdata, unsigned char *stream, int len);
 
 signed short soundbuf[SNDSZ*2]; //16bit*2ch
 
+bool ADVANCED_M3U=FALSE;
+int ADVANCED_FD1=-1;
+int ADVANCED_FD2=-1;
+bool ADVANCED_FD1_RO=false;
+bool ADVANCED_FD2_RO=false;
+
 char RPATH[512];
 OEMCHAR tmppath[MAX_PATH];
 
@@ -93,6 +99,7 @@ static void update_variables(void);
 /* media swap support */
 struct retro_disk_control_ext2_callback dskcb;
 extern char np2_main_disk_images_paths[50][MAX_PATH];
+extern bool np2_main_disk_images_ro[50];
 extern unsigned int np2_main_disk_images_count;
 /*static unsigned drvno = 1;*/
 static unsigned disk_index = 0;
@@ -131,7 +138,7 @@ bool setdskindex(unsigned index){
 
    update_variables();
    strcpy(np2cfg.fddfile[drvno], np2_main_disk_images_paths[disk_index]);
-   diskdrv_setfdd(drvno, np2_main_disk_images_paths[disk_index], 0);
+   diskdrv_setfdd(drvno, np2_main_disk_images_paths[disk_index], np2_main_disk_images_ro[disk_index]);
 #endif
    return true;
 }
