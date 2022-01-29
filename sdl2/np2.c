@@ -526,7 +526,7 @@ char np2_main_read_m3u(const char *file)
 #if defined(SUPPORT_SCSI)
 			if(np2_ishdimage_scsi(name, OEMSTRLEN(name))) {
 				if(drvhddSCSI < 4) {
-					milstr_ncpy(np2cfg.scsihdd[drvhddSCSI], fullpath, MAX_PATH);
+					milstr_ncpy(np2cfg.scsihdd[drvhddSCSI], name, MAX_PATH);
 					drvhddSCSI++;
 				}
 			}
@@ -537,7 +537,7 @@ char np2_main_read_m3u(const char *file)
 #if defined(SUPPORT_IDEIO) || defined(SUPPORT_SASI)
 			if(np2_iscdimage(name, OEMSTRLEN(name))) {
 				if(np2_main_cd_images_count < sizeof(np2_main_cd_images_paths) / MAX_PATH) {
-					milstr_ncpy(np2_main_cd_images_paths[np2_main_cd_images_count], fullpath, MAX_PATH);
+					milstr_ncpy(np2_main_cd_images_paths[np2_main_cd_images_count], name, MAX_PATH);
 					for(; cdidx < 4; cdidx++) {
 						if(np2cfg.idetype[cdidx] == SXSIDEV_CDROM) {
 							if(!(setmedia & (1 << cdidx))) {
