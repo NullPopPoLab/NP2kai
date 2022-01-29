@@ -397,7 +397,7 @@ char np2_main_read_m3u(const char *file)
 
 	if(*p=='*'){
 		// advanced mark 
-		ADVANCED_M3U=TRUE;
+		ADVANCED_M3U=true;
 		++p;
 
 		if(*p && *p!=';')typ=*p++;
