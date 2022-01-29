@@ -441,6 +441,7 @@ char np2_main_read_m3u(const char *file)
     char* p=line;
 	int cdidx=0;
 	int hdidx=0;
+	int scsiidx=0;
 
     if (p[0] == '#')
       continue;
@@ -515,7 +516,6 @@ char np2_main_read_m3u(const char *file)
 						if(!(setmedia & (1 << hdidx))) {
 							milstr_ncpy(np2cfg.sasihdd[hdidx], name, MAX_PATH);
 							setmedia |= 1 << hdidx;
-							HDCount++;
 							++hdidx;
 							break;
 						}
@@ -525,9 +525,9 @@ char np2_main_read_m3u(const char *file)
 #endif
 #if defined(SUPPORT_SCSI)
 			if(np2_ishdimage_scsi(name, OEMSTRLEN(name))) {
-				if(drvhddSCSI < 4) {
-					milstr_ncpy(np2cfg.scsihdd[drvhddSCSI], name, MAX_PATH);
-					drvhddSCSI++;
+				if(scsiidx < 4) {
+					milstr_ncpy(np2cfg.scsihdd[scsiidx], name, MAX_PATH);
+					++scsiidx;
 				}
 			}
 #endif
