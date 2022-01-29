@@ -375,7 +375,7 @@ char np2_main_read_m3u(const char *file)
 #endif
   {
 	char typ,num,rof;
-    const char* p=line;
+    char* p=line;
 
     if (p[0] == '#')
       continue;
