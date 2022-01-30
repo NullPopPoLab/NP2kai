@@ -27,6 +27,7 @@ extern "C" {
  *   frontend language definition */
 
 struct retro_core_option_definition option_defs_us[] = {
+#if 0
    {
       "np2kai_drive",
       "Swap Disks on Drive",
@@ -38,6 +39,7 @@ struct retro_core_option_definition option_defs_us[] = {
       },
       "FDD2"
    },
+#endif
    {
       "np2kai_keyboard",
       "Keyboard (Restart)",
@@ -850,6 +852,7 @@ struct retro_core_option_definition option_defs_us[] = {
 /* RETRO_LANGUAGE_JAPANESE */
 
 struct retro_core_option_definition option_defs_ja[] = {
+#if 0
    {
       "np2kai_drive",
       "ディスク入れ替えドライブ",
@@ -861,6 +864,7 @@ struct retro_core_option_definition option_defs_ja[] = {
       },
       "FDD2"
    },
+#endif
    {
       "np2kai_keyboard",
       "キーボード形式 (要リスタート)",

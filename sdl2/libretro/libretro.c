@@ -903,10 +903,10 @@ static void update_variables(void)
 {
    struct retro_variable var = {0};
 
+#if 0
    var.key = "np2kai_drive";
    var.value = NULL;
 
-#if 0
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
    {
       if (strcmp(var.value, "FDD1") == 0)
