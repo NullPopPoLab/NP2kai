@@ -103,7 +103,7 @@ static unsigned int lastidx = 0;
 #define RETRO_DEVICE_JOY2NUMPAD RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_JOYPAD, 2)
 
 #define MAX_PADS 2
-static unsigned input_devices[MAX_PADS]={
+unsigned input_devices[MAX_PADS]={
 	RETRO_DEVICE_JOY2NUMPAD,
 	RETRO_DEVICE_JOYPAD
 };
