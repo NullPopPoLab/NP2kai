@@ -765,7 +765,7 @@ void updateInput(){
 		  }
 		}break;
 
-		case RETRO_DEVICE_DPAD2MOUSE:{
+		case RETRO_DEVICE_DPAD2MOUSE:
 		case RETRO_DEVICE_ANALOG2MOUSE:{
 		  int mouse_l_device = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B);
 		  int mouse_r_device = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A);
