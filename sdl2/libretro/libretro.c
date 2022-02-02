@@ -908,7 +908,7 @@ void lowerstring(char* str)
 
 void retro_set_environment(retro_environment_t cb)
 {
-   static const struct retro_controller_description port1[] = {
+   static const struct retro_controller_description port[] = {
       { "RetroPad",              RETRO_DEVICE_JOYPAD },
       { "RetroPad to Cursor",    RETRO_DEVICE_JOY2CURSOR },
       { "RetroPad to NumPad",    RETRO_DEVICE_JOY2NUMPAD },
