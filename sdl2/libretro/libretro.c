@@ -106,6 +106,17 @@ static unsigned disk_index = 0;
 static bool disk_inserted[4] = {false,false,false,false};
 static unsigned int lastidx = 0;
 
+#define RETRO_DEVICE_JOY2CURSOR RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_JOYPAD, 1)
+#define RETRO_DEVICE_JOY2NUMPAD RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_JOYPAD, 2)
+#define RETRO_DEVICE_DPAD2MOUSE RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_JOYPAD, 3)
+#define RETRO_DEVICE_ANALOG2MOUSE RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_ANALOG, 1)
+
+#define MAX_PADS 2
+unsigned input_devices[MAX_PADS]={
+	RETRO_DEVICE_JOY2NUMPAD,
+	RETRO_DEVICE_JOYPAD
+};
+
 //all the fake functions used to limit swapping to 1 disk drive
 bool setdskeject(unsigned drive, bool ejected){
    disk_inserted[drive] = !ejected;
@@ -504,7 +515,47 @@ static int j2k_pad[18] = {
    RETRO_DEVICE_ID_JOYPAD_SELECT,
    RETRO_DEVICE_ID_JOYPAD_START,
 };
-static uint16_t j2k_key[18] = {
+static uint16_t j2k_joypad[18] = {
+   RETROK_UNKNOWN,
+   RETROK_UNKNOWN,
+   RETROK_UNKNOWN,
+   RETROK_UNKNOWN,
+   RETROK_UNKNOWN,
+   RETROK_UNKNOWN,
+   RETROK_SPACE,
+   RETROK_UNKNOWN,
+   RETROK_UNKNOWN,
+   RETROK_F1,
+   RETROK_ESCAPE,
+   RETROK_F4,
+   RETROK_RETURN,
+   RETROK_F5,
+   RETROK_LSHIFT,
+   RETROK_LCTRL,
+   RETROK_HOME,
+   RETROK_END, /*HELP*/
+};
+static uint16_t j2k_cursor[18] = {
+   RETROK_UP,
+   RETROK_DOWN,
+   RETROK_LEFT,
+   RETROK_RIGHT,
+   RETROK_x,
+   RETROK_z,
+   RETROK_SPACE,
+   RETROK_F3,
+   RETROK_F2,
+   RETROK_F1,
+   RETROK_ESCAPE,
+   RETROK_F4,
+   RETROK_RETURN,
+   RETROK_F5,
+   RETROK_LSHIFT,
+   RETROK_LCTRL,
+   RETROK_HOME,
+   RETROK_END, /*HELP*/
+};
+static uint16_t j2k_numpad[18] = {
    RETROK_KP8,
    RETROK_KP2,
    RETROK_KP4,
@@ -524,64 +575,6 @@ static uint16_t j2k_key[18] = {
    RETROK_HOME,
    RETROK_END, /*HELP*/
 };
-#if 0
-static uint16_t j2k_key_arrow[12] = { 
-   RETROK_UP,
-   RETROK_DOWN,
-   RETROK_LEFT,
-   RETROK_RIGHT,
-   RETROK_x,
-   RETROK_z,
-   RETROK_SPACE,
-   RETROK_LCTRL,
-   RETROK_BACKSPACE,
-   RETROK_RSHIFT,
-   RETROK_ESCAPE,
-   RETROK_RETURN
-};
-static uint16_t j2k_key_arrow3[12] = { 
-   RETROK_UP,
-   RETROK_DOWN,
-   RETROK_LEFT,
-   RETROK_RIGHT,
-   RETROK_c,
-   RETROK_x,
-   RETROK_SPACE,
-   RETROK_z,
-   RETROK_BACKSPACE,
-   RETROK_RSHIFT,
-   RETROK_ESCAPE,
-   RETROK_RETURN
-};
-static uint16_t j2k_key_kpad[12] = { 
-   RETROK_KP8,
-   RETROK_KP2,
-   RETROK_KP4,
-   RETROK_KP6,
-   RETROK_x,
-   RETROK_z,
-   RETROK_SPACE,
-   RETROK_LCTRL,
-   RETROK_BACKSPACE,
-   RETROK_RSHIFT,
-   RETROK_ESCAPE,
-   RETROK_RETURN
-};
-static uint16_t j2k_key_kpad3[12] = { 
-   RETROK_KP8,
-   RETROK_KP2,
-   RETROK_KP4,
-   RETROK_KP6,
-   RETROK_c,
-   RETROK_x,
-   RETROK_SPACE,
-   RETROK_z,
-   RETROK_BACKSPACE,
-   RETROK_RSHIFT,
-   RETROK_ESCAPE,
-   RETROK_RETURN
-};
-#endif
 
 void resetInput(void) {
   int i;
@@ -617,11 +610,11 @@ void updateInput(){
   }
 
   // --- input NP2 menu
-  int menu_key_f12 = input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F12);
-  int menu_mouse_m = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_MIDDLE);
+//  int menu_key_f12 = input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F12);
+//  int menu_mouse_m = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_MIDDLE);
   int menu_joy_menu = input_cb(0, RETRO_DEVICE_JOYPAD, 0, joyNP2menubtn);
 
-  if((menu_key_f12 || menu_joy_menu || menu_mouse_m) && menukey == 0) {
+  if((/*menu_key_f12 ||*/ menu_joy_menu /*|| menu_mouse_m*/) && menukey == 0) {
     menukey = 1;
     if(menuvram == NULL) {
       sysmenu_menuopen(0, 0, 0);
@@ -633,7 +626,7 @@ void updateInput(){
       scrndraw_redraw();
       menu_active = 0;
     }
-  } else if(!(menu_key_f12 || menu_joy_menu || menu_mouse_m) && menukey == 1) {
+  } else if(!(/*menu_key_f12 ||*/ menu_joy_menu /*|| menu_mouse_m*/) && menukey == 1) {
     menukey = 0;
   }
 
@@ -654,202 +647,203 @@ void updateInput(){
     }
   }
 
-  // Joy2Key
-  /*if(m_tJoyMode == LR_NP2KAI_JOYMODE_KEY) {*/
-    for(i = 0; i < 18; i++) {
-      input = input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i]);
-      if(input && !abKeyStat[j2k_key[i]]) {
-        send_libretro_key_down(j2k_key[i]);
-        abKeyStat[j2k_key[i]] |= TRUE;
-      }/* else if(!input && abKeyStat[j2k_key[i]]) {
-        send_libretro_key_up(j2k_key[i]);
-        abKeyStat[j2k_key[i]] = FALSE;
-      }*/
-    }
+    // Joy2Key
+	switch(input_devices[0]){
+		case RETRO_DEVICE_JOYPAD:
+		case RETRO_DEVICE_DPAD2MOUSE:
+		case RETRO_DEVICE_ANALOG2MOUSE:
+		for(i = 0; i < 18; i++) {
+		  if(j2k_joypad[i]==RETROK_UNKNOWN)continue;
+		  input = input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i]);
+		  if(input && !abKeyStat[j2k_joypad[i]]) {
+		    send_libretro_key_down(j2k_joypad[i]);
+		    abKeyStat[j2k_joypad[i]] |= TRUE;
+		  }
+		}
+		break;
+
+		case RETRO_DEVICE_JOY2CURSOR:
+		for(i = 0; i < 18; i++) {
+		  if(j2k_cursor[i]==RETROK_UNKNOWN)continue;
+		  input = input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i]);
+		  if(input && !abKeyStat[j2k_cursor[i]]) {
+		    send_libretro_key_down(j2k_cursor[i]);
+		    abKeyStat[j2k_cursor[i]] |= TRUE;
+		  }
+		}
+		break;
+
+		case RETRO_DEVICE_JOY2NUMPAD:
+		for(i = 0; i < 18; i++) {
+		  if(j2k_numpad[i]==RETROK_UNKNOWN)continue;
+		  input = input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i]);
+		  if(input && !abKeyStat[j2k_numpad[i]]) {
+		    send_libretro_key_down(j2k_numpad[i]);
+		    abKeyStat[j2k_numpad[i]] |= TRUE;
+		  }
+		}
+		break;
+	}
 
   // --- move mouse
 
   // mouse
-  int mouse_x_device = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
-  int mouse_y_device = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
+	switch(input_devices[0]){
+		case RETRO_DEVICE_MOUSE:{
+		  int mouse_x_device = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_X);
+		  int mouse_y_device = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_Y);
 
-  if(menuvram == NULL) {
-    mousemng_sync(mouse_x_device, mouse_y_device);
-  } else {
-    mposx += mouse_x_device; if(mposx < 0) mposx = 0; if(mposx >= w) mposx = w - 1;
-    mposy += mouse_y_device; if(mposy < 0) mposy = 0; if(mposy >= h) mposy = h - 1;
-    if(lastx != mposx || lasty != mposy)
-      menubase_moving(mposx, mposy, 0);
-  }
+		  if(menuvram == NULL) {
+		    mousemng_sync(mouse_x_device, mouse_y_device);
+		  } else {
+		    mposx += mouse_x_device; if(mposx < 0) mposx = 0; if(mposx >= w) mposx = w - 1;
+		    mposy += mouse_y_device; if(mposy < 0) mposy = 0; if(mposy >= h) mposy = h - 1;
+		    if(lastx != mposx || lasty != mposy)
+		      menubase_moving(mposx, mposy, 0);
+		  }
+		}break;
 
-  // Joy2Mouse
-  if(m_tJoyMode == LR_NP2KAI_JOYMODE_MOUSE) {
-    int j2m_move_x, j2m_move_y;
-    int j2m_u, j2m_d, j2m_l, j2m_r;
+		case RETRO_DEVICE_DPAD2MOUSE:{
+		    int j2m_move_x, j2m_move_y;
+		    int j2m_u, j2m_d, j2m_l, j2m_r;
 
-    j2m_move_x = j2m_move_y = 0;
+		    j2m_move_x = j2m_move_y = 0;
 
-    j2m_u = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP);
-    j2m_d = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN);
-    j2m_l = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT);
-    j2m_r = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT);
+		    j2m_u = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP);
+		    j2m_d = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN);
+		    j2m_l = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT);
+		    j2m_r = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT);
 
-    if((j2m_u || j2m_d || j2m_l || j2m_r) && j2m_movebtn == 0) {
-      j2m_movebtn = 1;
-      j2m_axel = 1.0;
-    } else if(!(j2m_u || j2m_d || j2m_l || j2m_r) && j2m_movebtn == 1) {
-      j2m_movebtn = 0;
-    }
-    j2m_axel += 0.1;
+		    if((j2m_u || j2m_d || j2m_l || j2m_r) && j2m_movebtn == 0) {
+		      j2m_movebtn = 1;
+		      j2m_axel = 1.0;
+		    } else if(!(j2m_u || j2m_d || j2m_l || j2m_r) && j2m_movebtn == 1) {
+		      j2m_movebtn = 0;
+		    }
+		    j2m_axel += 0.1;
 
-    if(j2m_movebtn) {
-      if(j2m_u) {
-        if(j2m_l) {
-          j2m_move_x = 1.0 * -j2m_axel;
-          j2m_move_y = 1.0 * -j2m_axel;
-        } else if(j2m_r) {
-          j2m_move_x = 1.0 * j2m_axel;
-          j2m_move_y = 1.0 * -j2m_axel;
-        } else {
-          j2m_move_y = 1.0 * -j2m_axel / 1.414;
-        }
-      } else if(j2m_d) {
-        if(j2m_l) {
-          j2m_move_x = 1.0 * -j2m_axel;
-          j2m_move_y = 1.0 * j2m_axel;
-        } else if(j2m_r) {
-          j2m_move_x = 1.0 * j2m_axel;
-          j2m_move_y = 1.0 * j2m_axel;
-        } else {
-          j2m_move_y = 1.0 * j2m_axel / 1.414;
-        }
-      } else {
-        if(j2m_l)
-          j2m_move_x = 1.0 * -j2m_axel / 1.414;
-        else if(j2m_r)
-          j2m_move_x = 1.0 * j2m_axel / 1.414;
-      }
-    }
+		    if(j2m_movebtn) {
+		      if(j2m_u) {
+		        if(j2m_l) {
+		          j2m_move_x = 1.0 * -j2m_axel;
+		          j2m_move_y = 1.0 * -j2m_axel;
+		        } else if(j2m_r) {
+		          j2m_move_x = 1.0 * j2m_axel;
+		          j2m_move_y = 1.0 * -j2m_axel;
+		        } else {
+		          j2m_move_y = 1.0 * -j2m_axel / 1.414;
+		        }
+		      } else if(j2m_d) {
+		        if(j2m_l) {
+		          j2m_move_x = 1.0 * -j2m_axel;
+		          j2m_move_y = 1.0 * j2m_axel;
+		        } else if(j2m_r) {
+		          j2m_move_x = 1.0 * j2m_axel;
+		          j2m_move_y = 1.0 * j2m_axel;
+		        } else {
+		          j2m_move_y = 1.0 * j2m_axel / 1.414;
+		        }
+		      } else {
+		        if(j2m_l)
+		          j2m_move_x = 1.0 * -j2m_axel / 1.414;
+		        else if(j2m_r)
+		          j2m_move_x = 1.0 * j2m_axel / 1.414;
+		      }
+		    }
 
-    if(menuvram == NULL) {
-      mousemng_sync(j2m_move_x, j2m_move_y);
-    } else {
-      mposx += j2m_move_x;
-      if(mposx < 0)
-        mposx = 0;
-      if(mposx >= w)
-        mposx = w - 1;
-      mposy += j2m_move_y;
-      if(mposy < 0)
-        mposy = 0;
-      if(mposy >= h)
-        mposy = h - 1;
-      if(lastx != mposx || lasty != mposy)
-        if(menuvram != NULL)
-          menubase_moving(mposx, mposy, 0);
-    }
-  }
+		    if(menuvram == NULL) {
+		      mousemng_sync(j2m_move_x, j2m_move_y);
+		    } else {
+		      mposx += j2m_move_x;
+		      if(mposx < 0)
+		        mposx = 0;
+		      if(mposx >= w)
+		        mposx = w - 1;
+		      mposy += j2m_move_y;
+		      if(mposy < 0)
+		        mposy = 0;
+		      if(mposy >= h)
+		        mposy = h - 1;
+		      if(lastx != mposx || lasty != mposy)
+		        if(menuvram != NULL)
+		          menubase_moving(mposx, mposy, 0);
+		    }
+		}break;
 
-  // Stick2Mouse
-  if(s2m) {
-    int use_stick;
-    int16_t analog_x, analog_y;
-    int mouse_move_x, mouse_move_y;
+		case RETRO_DEVICE_ANALOG2MOUSE:{
+		    int use_stick;
+		    int16_t analog_x, analog_y;
+		    int mouse_move_x, mouse_move_y;
 
-    if(s2m_no) {
-      use_stick = RETRO_DEVICE_INDEX_ANALOG_RIGHT;
-    } else {
-      use_stick = RETRO_DEVICE_INDEX_ANALOG_LEFT;
-    }
+		    use_stick = RETRO_DEVICE_INDEX_ANALOG_LEFT;
+		    analog_x = input_cb(0, RETRO_DEVICE_ANALOG, use_stick, RETRO_DEVICE_ID_ANALOG_X);
+		    analog_y = input_cb(0, RETRO_DEVICE_ANALOG, use_stick, RETRO_DEVICE_ID_ANALOG_Y);
 
-    analog_x = input_cb(0, RETRO_DEVICE_ANALOG, use_stick, RETRO_DEVICE_ID_ANALOG_X);
-    analog_y = input_cb(0, RETRO_DEVICE_ANALOG, use_stick, RETRO_DEVICE_ID_ANALOG_Y);
+		    mouse_move_x = (int)(analog_x * ((float)10 / 0x10000));
+		    mouse_move_y = (int)(analog_y * ((float)10 / 0x10000));
 
-    mouse_move_x = (int)(analog_x * ((float)10 / 0x10000));
-    mouse_move_y = (int)(analog_y * ((float)10 / 0x10000));
-
-    if(menuvram == NULL) {
-      mousemng_sync(mouse_move_x, mouse_move_y);
-    } else {
-      mposx += mouse_move_x;
-      if(mposx < 0)
-        mposx = 0;
-      if(mposx >= w)
-        mposx = w - 1;
-      mposy += mouse_move_y;
-      if(mposy < 0)
-        mposy = 0;
-      if(mposy >= h)
-        mposy = h - 1;
-      if(lastx != mposx || lasty != mposy)
-        menubase_moving(mposx, mposy, 0);
-    }
-  }
+		    if(menuvram == NULL) {
+		      mousemng_sync(mouse_move_x, mouse_move_y);
+		    } else {
+		      mposx += mouse_move_x;
+		      if(mposx < 0)
+		        mposx = 0;
+		      if(mposx >= w)
+		        mposx = w - 1;
+		      mposy += mouse_move_y;
+		      if(mposy < 0)
+		        mposy = 0;
+		      if(mposy >= h)
+		        mposy = h - 1;
+		      if(lastx != mposx || lasty != mposy)
+		        menubase_moving(mposx, mposy, 0);
+		    }
+		}break;
+	}
 
   lastx = mposx; lasty = mposy;
 
   // --- input mouse button
 
   // mouse
-  int mouse_l_device = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
-  int mouse_r_device = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
   int mouse_l, mouse_r;
-
   mouse_l = mouse_r = 0;
 
-  if(mouse_l_device) {
-    mouse_l = 1;
-  }
-  if(mouse_r_device) {
-    mouse_r = 1;
-  }
+	switch(input_devices[0]){
+		case RETRO_DEVICE_MOUSE:{
+		  int mouse_l_device = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_LEFT);
+		  int mouse_r_device = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_RIGHT);
 
-  // joy2mouse
-  if(m_tJoyMode == LR_NP2KAI_JOYMODE_MOUSE) {
-      int j2m_a = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A);
-      int j2m_b = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B);
-      if(j2m_a) {
-        mouse_r = 1;
-      }
-      if(j2m_b) {
-        mouse_l = 1;
-      }
-  }
+		  if(mouse_l_device) {
+		    mouse_l = 1;
+		  }
+		  if(mouse_r_device) {
+		    mouse_r = 1;
+		  }
+		}break;
 
-  // Stick2Mouse
-  if(s2m) {
-    int use_thumb;
-    int16_t analog_thumb;
-    int shift_btn = 0;
+		case RETRO_DEVICE_DPAD2MOUSE:{
+		case RETRO_DEVICE_ANALOG2MOUSE:{
+		  int mouse_l_device = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B);
+		  int mouse_r_device = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A);
 
-    if(s2m_no) {
-      use_thumb = RETRO_DEVICE_ID_JOYPAD_R3;
-    } else {
-      use_thumb = RETRO_DEVICE_ID_JOYPAD_L3;
-    }
+		  if(mouse_l_device) {
+		    mouse_l = 1;
+		  }
+		  if(mouse_r_device) {
+		    mouse_r = 1;
+		  }
+		}break;
+	}
 
-    analog_thumb = input_cb(0, RETRO_DEVICE_JOYPAD, 0, use_thumb);
-    if(s2m_shift != 0xFF) {
-      shift_btn = input_cb(0, RETRO_DEVICE_JOYPAD, 0, s2m_shift);
-    }
-
-    if(analog_thumb && !shift_btn) {
-      mouse_l = 1;
-    } else if(analog_thumb && shift_btn) {
-      mouse_r = 1;
-    }
-  }
-
-  if(j2m_l_down == 0 && mouse_l) {
-    j2m_l_down = 1;
+  if(mouse_l) {
     if(menuvram == NULL) {
       mousemng_buttonevent(MOUSEMNG_LEFTDOWN);
     } else {
       menubase_moving(mposx, mposy, 1);
       scrndraw_redraw();
     }
-  } else if(j2m_l_down == 1 && !mouse_l) {
-    j2m_l_down = 0;
+  } else if(!mouse_l) {
     if(menuvram == NULL) {
       mousemng_buttonevent(MOUSEMNG_LEFTUP);
     } else {
@@ -857,14 +851,12 @@ void updateInput(){
       scrndraw_redraw();
     }
   }
-  if(j2m_r_down == 0 && mouse_r) {
-    j2m_r_down = 1;
+  if(mouse_r) {
     if(menuvram == NULL) {
       mousemng_buttonevent(MOUSEMNG_RIGHTDOWN);
       scrndraw_redraw();
     }
-  } else if(j2m_r_down == 1 && !mouse_r) {
-    j2m_r_down= 0;
+  } else if(!mouse_r) {
     if(menuvram == NULL) {
       mousemng_buttonevent(MOUSEMNG_RIGHTUP);
       scrndraw_redraw();
@@ -916,15 +908,20 @@ void lowerstring(char* str)
 
 void retro_set_environment(retro_environment_t cb)
 {
-   static const struct retro_controller_description port[] = {
+   static const struct retro_controller_description port1[] = {
       { "RetroPad",              RETRO_DEVICE_JOYPAD },
+      { "RetroPad to Cursor",    RETRO_DEVICE_JOY2CURSOR },
+      { "RetroPad to NumPad",    RETRO_DEVICE_JOY2NUMPAD },
+      { "RetroPad to Mouse",     RETRO_DEVICE_DPAD2MOUSE },
+      { "Analog RetroPad to Mouse",RETRO_DEVICE_ANALOG2MOUSE },
       { "RetroKeyboard",         RETRO_DEVICE_KEYBOARD },
+      { "Mouse",                 RETRO_DEVICE_MOUSE },
       { 0 },
    };
 
    static const struct retro_controller_info ports[] = {
-      { port, 2 },
-      { port, 2 },
+      { port, 7 },
+      { port, 1 },
       { NULL, 0 },
    };
 
@@ -1476,6 +1473,7 @@ static void update_variables(void)
          np2cfg.usecdecc = 0;
    }
 
+#if 0
   var.key = "np2kai_stick2mouse";
   var.value = NULL;
   if(environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
@@ -1506,7 +1504,6 @@ static void update_variables(void)
     }
   }
 
-#if 0
   var.key = "np2kai_joymode";
   var.value = NULL;
   if(environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
@@ -1651,15 +1648,15 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
 void retro_init (void)
 {
 	static struct retro_input_descriptor desc[] = {
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "NumPad 6" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "NumPad 4" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "NumPad 2" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "NumPad 8" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "X" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Z" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "NumPad 6 / D-Pad Right" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "NumPad 4 / D-Pad Left" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "NumPad 2 / D-Pad Up" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "NumPad 8 / D-Pad Down" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "X / Button 1" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Z / Button 3" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_C, "Space" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "F3" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "F2" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "F3 / Button 4" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "F2 / Button 2" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Z, "F1" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Clr" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Help" },
@@ -1669,7 +1666,6 @@ void retro_init (void)
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "Return" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "Ctrl" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3, "Shift" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MENU, "Graph" },
 
 		{ 0, 0, 0, 0, NULL }
 	};
@@ -1847,8 +1843,7 @@ unsigned retro_api_version(void)
 
 void retro_set_controller_port_device(unsigned port, unsigned device)
 {
-   (void)port;
-   (void)device;
+	if(port<MAX_PADS)input_devices[port] = device;
 }
 
 unsigned retro_get_region (void)
