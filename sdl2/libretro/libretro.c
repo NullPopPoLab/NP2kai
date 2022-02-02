@@ -99,6 +99,15 @@ static unsigned disk_index = 0;
 static bool disk_inserted = false;
 static unsigned int lastidx = 0;
 
+#define RETRO_DEVICE_JOY2CURSOR RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_JOYPAD, 1)
+#define RETRO_DEVICE_JOY2NUMPAD RETRO_DEVICE_SUBCLASS(RETRO_DEVICE_JOYPAD, 2)
+
+#define MAX_PADS 2
+static unsigned input_devices[MAX_PADS]={
+	RETRO_DEVICE_JOY2NUMPAD,
+	RETRO_DEVICE_JOYPAD
+};
+
 //all the fake functions used to limit swapping to 1 disk drive
 bool setdskeject(bool ejected){
    disk_inserted = !ejected;
@@ -447,7 +456,47 @@ static int j2k_pad[18] = {
    RETRO_DEVICE_ID_JOYPAD_SELECT,
    RETRO_DEVICE_ID_JOYPAD_START,
 };
-static uint16_t j2k_key[18] = {
+static uint16_t j2k_joypad[18] = {
+   RETROK_UNKNOWN,
+   RETROK_UNKNOWN,
+   RETROK_UNKNOWN,
+   RETROK_UNKNOWN,
+   RETROK_UNKNOWN,
+   RETROK_UNKNOWN,
+   RETROK_SPACE,
+   RETROK_UNKNOWN,
+   RETROK_UNKNOWN,
+   RETROK_F1,
+   RETROK_ESCAPE,
+   RETROK_F4,
+   RETROK_RETURN,
+   RETROK_F5,
+   RETROK_LSHIFT,
+   RETROK_LCTRL,
+   RETROK_HOME,
+   RETROK_END, /*HELP*/
+};
+static uint16_t j2k_cursor[18] = {
+   RETROK_UP,
+   RETROK_DOWN,
+   RETROK_LEFT,
+   RETROK_RIGHT,
+   RETROK_x,
+   RETROK_z,
+   RETROK_SPACE,
+   RETROK_F3,
+   RETROK_F2,
+   RETROK_F1,
+   RETROK_ESCAPE,
+   RETROK_F4,
+   RETROK_RETURN,
+   RETROK_F5,
+   RETROK_LSHIFT,
+   RETROK_LCTRL,
+   RETROK_HOME,
+   RETROK_END, /*HELP*/
+};
+static uint16_t j2k_numpad[18] = {
    RETROK_KP8,
    RETROK_KP2,
    RETROK_KP4,
@@ -467,64 +516,6 @@ static uint16_t j2k_key[18] = {
    RETROK_HOME,
    RETROK_END, /*HELP*/
 };
-#if 0
-static uint16_t j2k_key_arrow[12] = { 
-   RETROK_UP,
-   RETROK_DOWN,
-   RETROK_LEFT,
-   RETROK_RIGHT,
-   RETROK_x,
-   RETROK_z,
-   RETROK_SPACE,
-   RETROK_LCTRL,
-   RETROK_BACKSPACE,
-   RETROK_RSHIFT,
-   RETROK_ESCAPE,
-   RETROK_RETURN
-};
-static uint16_t j2k_key_arrow3[12] = { 
-   RETROK_UP,
-   RETROK_DOWN,
-   RETROK_LEFT,
-   RETROK_RIGHT,
-   RETROK_c,
-   RETROK_x,
-   RETROK_SPACE,
-   RETROK_z,
-   RETROK_BACKSPACE,
-   RETROK_RSHIFT,
-   RETROK_ESCAPE,
-   RETROK_RETURN
-};
-static uint16_t j2k_key_kpad[12] = { 
-   RETROK_KP8,
-   RETROK_KP2,
-   RETROK_KP4,
-   RETROK_KP6,
-   RETROK_x,
-   RETROK_z,
-   RETROK_SPACE,
-   RETROK_LCTRL,
-   RETROK_BACKSPACE,
-   RETROK_RSHIFT,
-   RETROK_ESCAPE,
-   RETROK_RETURN
-};
-static uint16_t j2k_key_kpad3[12] = { 
-   RETROK_KP8,
-   RETROK_KP2,
-   RETROK_KP4,
-   RETROK_KP6,
-   RETROK_c,
-   RETROK_x,
-   RETROK_SPACE,
-   RETROK_z,
-   RETROK_BACKSPACE,
-   RETROK_RSHIFT,
-   RETROK_ESCAPE,
-   RETROK_RETURN
-};
-#endif
 
 void resetInput(void) {
   int i;
@@ -560,11 +551,11 @@ void updateInput(){
   }
 
   // --- input NP2 menu
-  int menu_key_f12 = input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F12);
-  int menu_mouse_m = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_MIDDLE);
+//  int menu_key_f12 = input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F12);
+//  int menu_mouse_m = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_MIDDLE);
   int menu_joy_menu = input_cb(0, RETRO_DEVICE_JOYPAD, 0, joyNP2menubtn);
 
-  if((menu_key_f12 || menu_joy_menu || menu_mouse_m) && menukey == 0) {
+  if((/*menu_key_f12 ||*/ menu_joy_menu /*|| menu_mouse_m*/) && menukey == 0) {
     menukey = 1;
     if(menuvram == NULL) {
       sysmenu_menuopen(0, 0, 0);
@@ -576,7 +567,7 @@ void updateInput(){
       scrndraw_redraw();
       menu_active = 0;
     }
-  } else if(!(menu_key_f12 || menu_joy_menu || menu_mouse_m) && menukey == 1) {
+  } else if(!(/*menu_key_f12 ||*/ menu_joy_menu /*|| menu_mouse_m*/) && menukey == 1) {
     menukey = 0;
   }
 
@@ -597,18 +588,41 @@ void updateInput(){
     }
   }
 
-  // Joy2Key
-  /*if(m_tJoyMode == LR_NP2KAI_JOYMODE_KEY) {*/
-    for(i = 0; i < 18; i++) {
-      input = input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i]);
-      if(input && !abKeyStat[j2k_key[i]]) {
-        send_libretro_key_down(j2k_key[i]);
-        abKeyStat[j2k_key[i]] |= TRUE;
-      }/* else if(!input && abKeyStat[j2k_key[i]]) {
-        send_libretro_key_up(j2k_key[i]);
-        abKeyStat[j2k_key[i]] = FALSE;
-      }*/
-    }
+    // Joy2Key
+	switch(input_devices[0]){
+		case RETRO_DEVICE_JOYPAD:
+		for(i = 0; i < 18; i++) {
+		  if(j2k_joypad[i]==RETROK_UNKNOWN)continue;
+		  input = input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i]);
+		  if(input && !abKeyStat[j2k_joypad[i]]) {
+		    send_libretro_key_down(j2k_joypad[i]);
+		    abKeyStat[j2k_joypad[i]] |= TRUE;
+		  }
+		}
+		break;
+
+		case RETRO_DEVICE_JOY2CURSOR:
+		for(i = 0; i < 18; i++) {
+		  if(j2k_cursor[i]==RETROK_UNKNOWN)continue;
+		  input = input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i]);
+		  if(input && !abKeyStat[j2k_cursor[i]]) {
+		    send_libretro_key_down(j2k_cursor[i]);
+		    abKeyStat[j2k_cursor[i]] |= TRUE;
+		  }
+		}
+		break;
+
+		case RETRO_DEVICE_JOY2NUMPAD:
+		for(i = 0; i < 18; i++) {
+		  if(j2k_numpad[i]==RETROK_UNKNOWN)continue;
+		  input = input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i]);
+		  if(input && !abKeyStat[j2k_numpad[i]]) {
+		    send_libretro_key_down(j2k_numpad[i]);
+		    abKeyStat[j2k_numpad[i]] |= TRUE;
+		  }
+		}
+		break;
+	}
 
   // --- move mouse
 
@@ -861,13 +875,15 @@ void retro_set_environment(retro_environment_t cb)
 {
    static const struct retro_controller_description port[] = {
       { "RetroPad",              RETRO_DEVICE_JOYPAD },
+      { "RetroPad to Cursor",    RETRO_DEVICE_JOY2CURSOR },
+      { "RetroPad to NumPad",    RETRO_DEVICE_JOY2NUMPAD },
       { "RetroKeyboard",         RETRO_DEVICE_KEYBOARD },
       { 0 },
    };
 
    static const struct retro_controller_info ports[] = {
-      { port, 2 },
-      { port, 2 },
+      { port, 4 },
+      { port, 1 },
       { NULL, 0 },
    };
 
@@ -1592,15 +1608,15 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
 void retro_init (void)
 {
 	static struct retro_input_descriptor desc[] = {
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "NumPad 6" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "NumPad 4" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "NumPad 2" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "NumPad 8" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "X" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Z" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "NumPad 6 / D-Pad Right" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "NumPad 4 / D-Pad Left" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "NumPad 2 / D-Pad Up" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "NumPad 8 / D-Pad Down" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "X / Button 1" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "Z / Button 3" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_C, "Space" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "F3" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "F2" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "F3 / Button 4" },
+		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "F2 / Button 2" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Z, "F1" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Clr" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Help" },
@@ -1610,7 +1626,6 @@ void retro_init (void)
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "Return" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "Ctrl" },
 		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3, "Shift" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MENU, "Graph" },
 
 		{ 0, 0, 0, 0, NULL }
 	};
@@ -1788,8 +1803,7 @@ unsigned retro_api_version(void)
 
 void retro_set_controller_port_device(unsigned port, unsigned device)
 {
-   (void)port;
-   (void)device;
+	if(port<MAX_PADS)input_devices[port] = device;
 }
 
 unsigned retro_get_region (void)
