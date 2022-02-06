@@ -54,6 +54,7 @@ extern int ADVANCED_FD1;
 extern int ADVANCED_FD2;
 extern bool ADVANCED_FD1_RO;
 extern bool ADVANCED_FD2_RO;
+extern int inserted_disk_idx[];
 
 static const char appname[] =
 #if defined(CPUCORE_IA32)
@@ -823,13 +824,20 @@ int np2_main(int argc, char *argv[]) {
 
 	drvfdd = 0;
 	if(ADVANCED_M3U){
-		if(ADVANCED_FD1>=0)diskdrv_setfdd(0, np2_main_disk_images_paths[ADVANCED_FD1], ADVANCED_FD1_RO);
-		if(ADVANCED_FD2>=0)diskdrv_setfdd(0, np2_main_disk_images_paths[ADVANCED_FD2], ADVANCED_FD2_RO);
+		if(ADVANCED_FD1>=0){
+			diskdrv_setfdd(0, np2_main_disk_images_paths[ADVANCED_FD1], ADVANCED_FD1_RO);
+			inserted_disk_idx[0]=ADVANCED_FD1;
+		}
+		if(ADVANCED_FD2>=0){
+			diskdrv_setfdd(1, np2_main_disk_images_paths[ADVANCED_FD2], ADVANCED_FD2_RO);
+			inserted_disk_idx[1]=ADVANCED_FD2;
+		}
 	}
 	else{
 		for (i = 0; i < np2_main_disk_images_count; i++) {
 			if (i < 2) {
 				diskdrv_setfdd(i, np2_main_disk_images_paths[i], 0);
+				inserted_disk_idx[i]=i;
 			}
 		}
 	}
