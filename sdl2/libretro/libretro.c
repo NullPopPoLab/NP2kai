@@ -117,7 +117,7 @@ bool setdskeject(unsigned drive, bool ejected){
    else{
 /*      strcpy(np2cfg.fddfile[drive], np2_main_disk_images_paths[disk_index]);*/
       diskdrv_setfdd(drive, np2_main_disk_images_paths[disk_index], 0);
-      inserted_disk_idx[disk_index]=-1;
+      inserted_disk_idx[drive]=disk_index;
    }
    return true;
 }
