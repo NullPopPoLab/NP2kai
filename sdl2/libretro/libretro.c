@@ -67,6 +67,7 @@ bool ADVANCED_FD2_RO=false;
 
 char RPATH[512];
 OEMCHAR tmppath[MAX_PATH];
+int inserted_disk_idx[4]={-1,-1,-1,-1};
 
 static retro_log_printf_t log_cb = NULL;
 static retro_video_refresh_t video_cb = NULL;
@@ -122,10 +123,12 @@ bool setdskeject(unsigned drive, bool ejected){
    disk_inserted[drive] = !ejected;
    if(ejected){
       diskdrv_setfdd(drive, 0, 0);
+      inserted_disk_idx[drive]=-1;
    }
    else{
 /*      strcpy(np2cfg.fddfile[drive], np2_main_disk_images_paths[disk_index]);*/
       diskdrv_setfdd(drive, np2_main_disk_images_paths[disk_index], 0);
+      inserted_disk_idx[disk_index]=-1;
    }
    return true;
 }
@@ -208,6 +211,13 @@ static bool disk_get_image_label(unsigned index, char *label, size_t len)
    return false;
 }
 
+static int disk_get_drive_image_index(unsigned drive)
+{
+	if(drive>=get_num_drives())return -1;
+	if(get_drive_eject_state(drive))return -1;
+	return inserted_disk_idx[drive];	
+}
+
 void attach_disk_swap_interface(){
    //these functions are unused
    dskcb.set_drive_eject_state = setdskeject;
@@ -220,6 +230,7 @@ void attach_disk_swap_interface(){
    dskcb.replace_image_index = replacedsk;
    dskcb.get_image_path = disk_get_image_path;
    dskcb.get_image_label = disk_get_image_label;
+   dskcb.get_drive_image_index = disk_get_drive_image_index;
    disk_inserted[0] = np2_main_disk_images_count>0;
    disk_inserted[1] = np2_main_disk_images_count>1;
    disk_inserted[2] = false;
