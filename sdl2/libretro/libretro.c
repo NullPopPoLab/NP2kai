@@ -213,7 +213,7 @@ static bool disk_get_image_label(unsigned index, char *label, size_t len)
 
 static int disk_get_drive_image_index(unsigned drive)
 {
-	if(drive>=get_num_drives())return -1;
+	if(drive>=getnumdrives())return -1;
 	if(get_drive_eject_state(drive))return -1;
 	return inserted_disk_idx[drive];	
 }
