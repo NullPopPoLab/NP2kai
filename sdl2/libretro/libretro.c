@@ -504,9 +504,18 @@ static int joyNP2menubtn;
 static int s2m;
 static int s2m_no;
 static uint8_t s2m_shift;
-static BOOL abKeyStat[0x200];
+static uint8_t abKeyStat[0x200];
 
-static int j2k_pad[18] = { 
+#define ABKF_DOWN     (1<<0)
+#define ABKF_KEYBOARD (1<<1)
+#define ABKF_JOYPAD   (1<<2)
+#define ABKF_CURSOR   (1<<3)
+#define ABKF_NUMPAD   (1<<4)
+#define ABKF_DEVICES  (ABKF_KEYBOARD|ABKF_JOYPAD|ABKF_CURSOR|ABKF_NUMPAD)
+
+#define J2K_SIZE 18
+
+static int j2k_pad[J2K_SIZE] = { 
    RETRO_DEVICE_ID_JOYPAD_UP,
    RETRO_DEVICE_ID_JOYPAD_DOWN,
    RETRO_DEVICE_ID_JOYPAD_LEFT,
@@ -526,7 +535,7 @@ static int j2k_pad[18] = {
    RETRO_DEVICE_ID_JOYPAD_SELECT,
    RETRO_DEVICE_ID_JOYPAD_START,
 };
-static uint16_t j2k_joypad[18] = {
+static uint16_t j2k_joypad[J2K_SIZE] = {
    RETROK_UNKNOWN,
    RETROK_UNKNOWN,
    RETROK_UNKNOWN,
@@ -546,7 +555,7 @@ static uint16_t j2k_joypad[18] = {
    RETROK_HOME,
    RETROK_END, /*HELP*/
 };
-static uint16_t j2k_cursor[18] = {
+static uint16_t j2k_cursor[J2K_SIZE] = {
    RETROK_UP,
    RETROK_DOWN,
    RETROK_LEFT,
@@ -566,7 +575,7 @@ static uint16_t j2k_cursor[18] = {
    RETROK_HOME,
    RETROK_END, /*HELP*/
 };
-static uint16_t j2k_numpad[18] = {
+static uint16_t j2k_numpad[J2K_SIZE] = {
    RETROK_KP8,
    RETROK_KP2,
    RETROK_KP4,
@@ -594,7 +603,7 @@ void resetInput(void) {
   j2m_l_down = 0;
   j2m_r_down = 0;
   for(i = 0; i < keys_needed; i++) {
-    abKeyStat[i] = FALSE;
+    abKeyStat[i] = 0;
   }
   joymng_sync();
 	reset_lrkey();
@@ -644,56 +653,88 @@ void updateInput(){
   // --- input key
   int input;
 
-  // keyboard
-  {
-    for(i = 0; i < keys_needed; i++) {
-      input = input_cb(0, RETRO_DEVICE_KEYBOARD, 0, keys_poll[i].lrkey);
-      if(input && !abKeyStat[keys_poll[i].lrkey]) {
-        send_libretro_key_down(keys_poll[i].lrkey);
-        abKeyStat[keys_poll[i].lrkey] = TRUE;
-      } else if(!input && abKeyStat[keys_poll[i].lrkey]) {
-        send_libretro_key_up(keys_poll[i].lrkey);
-        abKeyStat[keys_poll[i].lrkey] = FALSE;
-      }
-    }
-  }
-
     // Joy2Key
 	switch(input_devices[0]){
 		case RETRO_DEVICE_JOYPAD:
 		case RETRO_DEVICE_DPAD2MOUSE:
 		case RETRO_DEVICE_ANALOG2MOUSE:
-		for(i = 0; i < 18; i++) {
-		  if(j2k_joypad[i]==RETROK_UNKNOWN)continue;
-		  input = input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i]);
-		  if(input && !abKeyStat[j2k_joypad[i]]) {
-		    send_libretro_key_down(j2k_joypad[i]);
-		    abKeyStat[j2k_joypad[i]] |= TRUE;
-		  }
+		for(i = 0; i < J2K_SIZE; i++) {
+			if(j2k_cursor[i]!=RETROK_UNKNOWN){
+				abKeyStat[j2k_cursor[i]] &= ~ABKF_CURSOR;
+			}
+			if(j2k_numpad[i]!=RETROK_UNKNOWN){
+				abKeyStat[j2k_numpad[i]] &= ~ABKF_NUMPAD;
+			}
+			if(j2k_joypad[i]==RETROK_UNKNOWN)continue;
+			if(input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i])){
+				abKeyStat[j2k_joypad[i]] |= ABKF_JOYPAD;
+			}
+			else{
+				abKeyStat[j2k_joypad[i]] &= ~ABKF_JOYPAD;
+			}
 		}
 		break;
 
 		case RETRO_DEVICE_JOY2CURSOR:
-		for(i = 0; i < 18; i++) {
-		  if(j2k_cursor[i]==RETROK_UNKNOWN)continue;
-		  input = input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i]);
-		  if(input && !abKeyStat[j2k_cursor[i]]) {
-		    send_libretro_key_down(j2k_cursor[i]);
-		    abKeyStat[j2k_cursor[i]] |= TRUE;
-		  }
+		for(i = 0; i < J2K_SIZE; i++) {
+			if(j2k_numpad[i]!=RETROK_UNKNOWN){
+				abKeyStat[j2k_numpad[i]] &= ~ABKF_NUMPAD;
+			}
+			if(j2k_joypad[i]!=RETROK_UNKNOWN){
+				abKeyStat[j2k_joypad[i]] &= ~ABKF_JOYPAD;
+			}
+			if(j2k_cursor[i]==RETROK_UNKNOWN)continue;
+			if(input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i])){
+				abKeyStat[j2k_cursor[i]] |= ABKF_CURSOR;
+			}
+			else{
+				abKeyStat[j2k_cursor[i]] &= ~ABKF_CURSOR;
+			}
 		}
 		break;
 
 		case RETRO_DEVICE_JOY2NUMPAD:
-		for(i = 0; i < 18; i++) {
-		  if(j2k_numpad[i]==RETROK_UNKNOWN)continue;
-		  input = input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i]);
-		  if(input && !abKeyStat[j2k_numpad[i]]) {
-		    send_libretro_key_down(j2k_numpad[i]);
-		    abKeyStat[j2k_numpad[i]] |= TRUE;
-		  }
+		for(i = 0; i < J2K_SIZE; i++) {
+			if(j2k_joypad[i]!=RETROK_UNKNOWN){
+				abKeyStat[j2k_joypad[i]] &= ~ABKF_JOYPAD;
+			}
+			if(j2k_cursor[i]!=RETROK_UNKNOWN){
+				abKeyStat[j2k_cursor[i]] &= ~ABKF_CURSOR;
+			}
+			if(j2k_numpad[i]==RETROK_UNKNOWN)continue;
+			if(input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i])){
+				abKeyStat[j2k_numpad[i]] |= ABKF_NUMPAD;
+			}
+			else{
+				abKeyStat[j2k_numpad[i]] &= ~ABKF_NUMPAD;
+			}
 		}
 		break;
+	}
+
+	// keyboard
+	{
+		for(i = 0; i < keys_needed; i++) {
+			UINT k=keys_poll[i].lrkey;
+			if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k)){
+				abKeyStat[k] |= ABKF_KEYBOARD;
+			}
+			else{
+				abKeyStat[k] &= ~ABKF_KEYBOARD;
+			}
+			if(abKeyStat[k]&ABKF_DEVICES){
+				if(!(abKeyStat[k]&ABKF_DOWN)){
+					abKeyStat[k]|=ABKF_DOWN;
+					send_libretro_key_down(keys_poll[i].lrkey);
+				}
+			}
+			else{
+				if(abKeyStat[k]&ABKF_DOWN){
+					abKeyStat[k]&=~ABKF_DOWN;
+					send_libretro_key_up(keys_poll[i].lrkey);
+				}
+			}
+		}
 	}
 
   // --- move mouse
