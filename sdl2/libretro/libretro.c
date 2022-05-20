@@ -648,11 +648,70 @@ void updateInput(){
 	{
 		for(i = 0; i < keys_needed; i++) {
 			UINT k=keys_poll[i].lrkey;
-			if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k)){
-				abKeyStat[k] |= ABKF_KEYBOARD;
-			}
-			else{
-				abKeyStat[k] &= ~ABKF_KEYBOARD;
+			switch(k){
+				case RETROK_KP1:
+				if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))abKeyStat[k] |= ABKF_KEYBOARD;
+				else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) &&
+					input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147))abKeyStat[k] |= ABKF_KEYBOARD;
+				else abKeyStat[k] &= ~ABKF_KEYBOARD;
+				break;
+
+				case RETROK_KP2:
+				if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))abKeyStat[k] |= ABKF_KEYBOARD;
+				else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) &&
+					!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147) && 
+					!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369))abKeyStat[k] |= ABKF_KEYBOARD;
+				else abKeyStat[k] &= ~ABKF_KEYBOARD;
+				break;
+
+				case RETROK_KP3:
+				if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))abKeyStat[k] |= ABKF_KEYBOARD;
+				else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) &&
+					input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369))abKeyStat[k] |= ABKF_KEYBOARD;
+				else abKeyStat[k] &= ~ABKF_KEYBOARD;
+				break;
+
+				case RETROK_KP4:
+				if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))abKeyStat[k] |= ABKF_KEYBOARD;
+				else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147) &&
+					!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) && 
+					!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789))abKeyStat[k] |= ABKF_KEYBOARD;
+				else abKeyStat[k] &= ~ABKF_KEYBOARD;
+				break;
+
+				case RETROK_KP6:
+				if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))abKeyStat[k] |= ABKF_KEYBOARD;
+				else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369) &&
+					!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) && 
+					!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789))abKeyStat[k] |= ABKF_KEYBOARD;
+				else abKeyStat[k] &= ~ABKF_KEYBOARD;
+				break;
+
+				case RETROK_KP7:
+				if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))abKeyStat[k] |= ABKF_KEYBOARD;
+				else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789) &&
+					input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147))abKeyStat[k] |= ABKF_KEYBOARD;
+				else abKeyStat[k] &= ~ABKF_KEYBOARD;
+				break;
+
+				case RETROK_KP8:
+				if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))abKeyStat[k] |= ABKF_KEYBOARD;
+				else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789) &&
+					!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147) && 
+					!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369))abKeyStat[k] |= ABKF_KEYBOARD;
+				else abKeyStat[k] &= ~ABKF_KEYBOARD;
+				break;
+
+				case RETROK_KP9:
+				if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))abKeyStat[k] |= ABKF_KEYBOARD;
+				else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789) &&
+					input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369))abKeyStat[k] |= ABKF_KEYBOARD;
+				else abKeyStat[k] &= ~ABKF_KEYBOARD;
+				break;
+
+				default:
+				if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))abKeyStat[k] |= ABKF_KEYBOARD;
+				else abKeyStat[k] &= ~ABKF_KEYBOARD;
 			}
 			if(abKeyStat[k]&ABKF_DEVICES){
 				if(!(abKeyStat[k]&ABKF_DOWN)){
