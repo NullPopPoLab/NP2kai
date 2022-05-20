@@ -779,6 +779,7 @@ struct retro_core_option_definition option_defs_us[] = {
       },
       "ON"
    },
+#if 0
   {
     "np2kai_stick2mouse",
     "S2M(Joypad Analog Stick to Mouse) Mapping",
@@ -844,6 +845,7 @@ struct retro_core_option_definition option_defs_us[] = {
     },
     "L2"
   },
+#endif
   {NULL, NULL, NULL, {{0}}, NULL},
 };
 
@@ -1602,6 +1604,7 @@ struct retro_core_option_definition option_defs_ja[] = {
       },
       "ON"
    },
+#if 0
   {
     "np2kai_stick2mouse",
     "S2M(ジョイパッド アナログスティック->マウス マッピング",
@@ -1667,6 +1670,7 @@ struct retro_core_option_definition option_defs_ja[] = {
     },
     "L2"
   },
+#endif
   {NULL, NULL, NULL, {{0}}, NULL},
 };
 
