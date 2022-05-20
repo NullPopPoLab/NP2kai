@@ -831,10 +831,23 @@ void lowerstring(char* str)
 
 void retro_set_environment(retro_environment_t cb)
 {
+   static const struct retro_controller_description port[] = {
+      { "RetroPad",              RETRO_DEVICE_JOYPAD },
+      { "RetroKeyboard",         RETRO_DEVICE_KEYBOARD },
+      { 0 },
+   };
+
+   static const struct retro_controller_info ports[] = {
+      { port, 2 },
+      { port, 2 },
+      { NULL, 0 },
+   };
+
    struct retro_log_callback logging;
    BOOL allow_no_game = true;
 
    environ_cb = cb;
+   cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
 
    //bool no_rom = !LR_REQUIRESROM;
    //environ_cb(RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME, &no_rom);
