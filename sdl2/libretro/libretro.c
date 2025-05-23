@@ -55,6 +55,8 @@
 #include "cirrus_vga_extern.h"
 #endif	/* defined(SUPPORT_WAB) */
 
+#define CUSTOM_VERSION "+NC38"
+
 extern void sdlaudio_callback(void *userdata, unsigned char *stream, int len);
 
 signed short soundbuf[SNDSZ*2]; //16bit*2ch
@@ -1524,7 +1526,7 @@ void retro_get_system_info(struct retro_system_info *info)
    memset(info, 0, sizeof(*info));
    info->need_fullpath    = LR_NEEDFILEPATH;
    info->valid_extensions = LR_VALIDFILEEXT;
-   info->library_version  = LR_LIBVERSION;
+   info->library_version  = LR_LIBVERSION CUSTOM_VERSION;
    info->library_name     = LR_CORENAME;
    info->block_extract    = LR_BLOCKARCEXTRACT;
 }
