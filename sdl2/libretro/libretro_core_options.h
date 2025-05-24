@@ -818,28 +818,6 @@ struct retro_core_option_definition option_defs_us[] = {
     },
     "R1"
   },
-  {
-    "np2kai_joynp2menu",
-    "Joypad to NP2 menu Mapping",
-    "Select a gamepad button to open NP2 Menu.",
-    {
-      {"OFF", NULL},
-      {"L1", NULL},
-      {"L2", NULL},
-      {"L3", NULL},
-      {"R1", NULL},
-      {"R2", NULL},
-      {"R3", NULL},
-      {"A", NULL},
-      {"B", NULL},
-      {"X", NULL},
-      {"Y", NULL},
-      {"Start", NULL},
-      {"Select", NULL},
-      {NULL, NULL},
-    },
-    "L2"
-  },
   {NULL, NULL, NULL, {{0}}, NULL},
 };
 
@@ -1612,28 +1590,6 @@ struct retro_core_option_definition option_defs_ja[] = {
       {NULL, NULL},
     },
     "R1"
-  },
-  {
-    "np2kai_joynp2menu",
-    "NP2メニュー表示ボタン設定",
-    NULL,
-    {
-      {"OFF", NULL},
-      {"L1", NULL},
-      {"L2", NULL},
-      {"L3", NULL},
-      {"R1", NULL},
-      {"R2", NULL},
-      {"R3", NULL},
-      {"A", NULL},
-      {"B", NULL},
-      {"X", NULL},
-      {"Y", NULL},
-      {"Start", NULL},
-      {"Select", NULL},
-      {NULL, NULL},
-    },
-    "L2"
   },
   {NULL, NULL, NULL, {{0}}, NULL},
 };
