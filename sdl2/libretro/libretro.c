@@ -627,13 +627,79 @@ void updateInput(){
   // keyboard
   } else {
     for(i = 0; i < keys_needed; i++) {
-      input = input_cb(0, RETRO_DEVICE_KEYBOARD, 0, keys_poll[i].lrkey);
-      if(input && !abKeyStat[keys_poll[i].lrkey]) {
-        send_libretro_key_down(keys_poll[i].lrkey);
-        abKeyStat[keys_poll[i].lrkey] = TRUE;
-      } else if(!input && abKeyStat[keys_poll[i].lrkey]) {
-        send_libretro_key_up(keys_poll[i].lrkey);
-        abKeyStat[keys_poll[i].lrkey] = FALSE;
+      UINT k=keys_poll[i].lrkey;
+
+		switch(k){
+			case RETROK_KP1:
+			if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))input=true;
+			else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) &&
+				input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147))input=true;
+			else input=false;
+			break;
+
+			case RETROK_KP2:
+			if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))input=true;
+			else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) &&
+				!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147) && 
+				!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369))input=true;
+			else input=false;
+			break;
+
+			case RETROK_KP3:
+			if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))input=true;
+			else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) &&
+				input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369))input=true;
+			else input=false;
+			break;
+
+			case RETROK_KP4:
+			if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))input=true;
+			else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147) &&
+				!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) && 
+				!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789))input=true;
+			else input=false;
+			break;
+
+			case RETROK_KP6:
+			if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))input=true;
+			else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369) &&
+				!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) && 
+				!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789))input=true;
+			else input=false;
+			break;
+
+			case RETROK_KP7:
+			if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))input=true;
+			else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789) &&
+				input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147))input=true;
+			else input=false;
+			break;
+
+			case RETROK_KP8:
+			if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))input=true;
+			else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789) &&
+				!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147) && 
+				!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369))input=true;
+			else input=false;
+			break;
+
+			case RETROK_KP9:
+			if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))input=true;
+			else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789) &&
+				input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369))input=true;
+			else input=false;
+			break;
+
+			default:
+		      input = input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k);
+		}
+
+      if(input && !abKeyStat[k]) {
+        send_libretro_key_down(k);
+        abKeyStat[k] = TRUE;
+      } else if(!input && abKeyStat[k]) {
+        send_libretro_key_up(k);
+        abKeyStat[k] = FALSE;
       }
     }
   }
