@@ -100,20 +100,29 @@ static char slash = '/';
 static void update_variables(void);
 
 /* media swap support */
-struct retro_disk_control_callback dskcb;
-static unsigned drvno = 1;
+struct retro_disk_control_ext2_callback dskcb;
+//static unsigned drvno = 1;
 static unsigned disk_index = 0;
-static bool disk_inserted = false;
+//static bool disk_inserted = false;
 static unsigned int lastidx = 0;
 
-//all the fake functions used to limit swapping to 1 disk drive
-bool setdskeject(bool ejected){
-   disk_inserted = !ejected;
+bool setdskeject(unsigned drive, bool ejected){
+
+	if(ejected){
+		am3u_fd->slot_tbl[drive]=-1;
+		diskdrv_setfdd(drive, 0, 0);
+	}
+	else{
+		const AdvancedM3UMedia* media=&am3u_fd->changee_tbl[disk_index];
+		am3u_fd->slot_tbl[drive]=disk_index;
+		diskdrv_setfdd(drive, media->path, media->readonly);
+	}
+
    return true;
 }
 
-bool getdskeject(){
-   return !disk_inserted;
+bool getdskeject(unsigned drive){
+   return am3u_fd->slot_tbl[drive]<0;
 }
 
 unsigned getdskindex(){
@@ -122,23 +131,15 @@ unsigned getdskindex(){
 
 bool setdskindex(unsigned index){
    disk_index = index;
-   if(disk_index >= am3u_fd->changee_used)
-   {
-      //retroarch is trying to set "no disk in tray"
-      return true;
-   }
-
-	am3u_fd->slot_tbl[drvno]=disk_index;
-	const AdvancedM3UMedia* media=&am3u_fd->changee_tbl[disk_index];
-
-   update_variables();
-   strcpy(np2cfg.fddfile[drvno], media->path);
-   diskdrv_setfdd(drvno, media->path, media->readonly);
    return true;
 }
 
 unsigned getnumimages(){
    return am3u_fd->changee_used;
+}
+
+unsigned getnumdrives(){
+   return 4;
 }
 
 bool addimageindex() {
@@ -160,20 +161,59 @@ bool replacedsk(unsigned index,const struct retro_game_info *info){
    return true;
 }
 
+static bool disk_get_image_path(unsigned index, char *path, size_t len)
+{
+   if (len < 1)
+      return false;
+
+	const AdvancedM3UMedia* media=&am3u_fd->changee_tbl[index];
+
+      if (media->ready)
+      {
+         strncpy(path, media->path, len);
+         return true;
+      }
+
+   return false;
+}
+
+static bool disk_get_image_label(unsigned index, char *label, size_t len)
+{
+   if (len < 1)
+      return false;
+
+	const AdvancedM3UMedia* media=&am3u_fd->changee_tbl[index];
+
+		if (media->ready)
+		{
+         strncpy(label, media->label, len);
+			return true;
+		}
+
+   return false;
+}
+
+static int disk_get_drive_image_index(unsigned drive)
+{
+	if(drive>=getnumdrives())return -1;
+	if(getdskeject(drive))return -1;
+	return am3u_fd->slot_tbl[drive];
+}
+
 void attach_disk_swap_interface(){
-   //these functions are unused
-   dskcb.set_eject_state = setdskeject;
-   dskcb.get_eject_state = getdskeject;
+   dskcb.set_drive_eject_state = setdskeject;
+   dskcb.get_drive_eject_state = getdskeject;
    dskcb.set_image_index = setdskindex;
    dskcb.get_image_index = getdskindex;
+   dskcb.get_num_drives  = getnumdrives;
    dskcb.get_num_images  = getnumimages;
    dskcb.add_image_index = addimageindex;
    dskcb.replace_image_index = replacedsk;
-   if(getnumimages()) {
-      disk_inserted = true;
-   }
+   dskcb.get_image_path = disk_get_image_path;
+   dskcb.get_image_label = disk_get_image_label;
+   dskcb.get_drive_image_index = disk_get_drive_image_index;
 
-   environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_INTERFACE,&dskcb);
+   environ_cb(RETRO_ENVIRONMENT_SET_DISK_CONTROL_EXT2_INTERFACE,&dskcb);
 }
 
 void setnxtdskindex(void){
@@ -868,17 +908,6 @@ void retro_set_environment(retro_environment_t cb)
 static void update_variables(void)
 {
    struct retro_variable var = {0};
-
-   var.key = "np2kai_drive";
-   var.value = NULL;
-
-   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-   {
-      if (strcmp(var.value, "FDD1") == 0)
-         drvno = 0;
-      else if (strcmp(var.value, "FDD2") == 0)
-         drvno = 1;
-   }
 
    var.key = "np2kai_keyboard";
    var.value = NULL;
@@ -1597,6 +1626,8 @@ void retro_init (void)
    }
    if(environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &rgb) && log_cb)
          log_cb(RETRO_LOG_INFO, "Frontend supports RGB565 (or XRGB8888).\n");
+
+	attach_disk_swap_interface();
 }
 
 void retro_deinit(void)
