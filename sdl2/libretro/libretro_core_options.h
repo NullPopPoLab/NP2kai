@@ -779,7 +779,7 @@ struct retro_core_option_definition option_defs_us[] = {
       {"Mouse", NULL},
       {NULL, NULL},
     },
-    "R-stick"
+    "Cursor"
   },
   {
     "np2kai_stick2mouse",
