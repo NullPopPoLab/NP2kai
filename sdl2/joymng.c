@@ -29,6 +29,7 @@
 #if defined(__LIBRETRO__)
 #include "libretro.h"
 extern retro_input_state_t input_cb;
+extern bool is_joypad_port_enabled(unsigned port);
 
 static UINT8 s_cJoyFlag = 0;
 
@@ -55,15 +56,17 @@ BYTE joymng_getstat(void) {
 	{
 		UINT8 cJoyFlag = 0xff;
 
-	if (input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP))cJoyFlag &= ~JOY_UP_BIT;
-	if (input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN))cJoyFlag &= ~JOY_DOWN_BIT;
-	if (input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT))cJoyFlag &= ~JOY_LEFT_BIT;
-	if (input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT))cJoyFlag &= ~JOY_RIGHT_BIT;
+	if(is_joypad_port_enabled(0)){
+		if (input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP))cJoyFlag &= ~JOY_UP_BIT;
+		if (input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN))cJoyFlag &= ~JOY_DOWN_BIT;
+		if (input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT))cJoyFlag &= ~JOY_LEFT_BIT;
+		if (input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT))cJoyFlag &= ~JOY_RIGHT_BIT;
 
-	if (input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A) )cJoyFlag &= ~JOY_BTN1_BIT;
-	if (input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B) )cJoyFlag &= ~JOY_BTN3_BIT;
-	if (input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X) )cJoyFlag &= ~JOY_BTN4_BIT;
-	if (input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y) )cJoyFlag &= ~JOY_BTN2_BIT;
+		if (input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A) )cJoyFlag &= ~JOY_BTN1_BIT;
+		if (input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B) )cJoyFlag &= ~JOY_BTN3_BIT;
+		if (input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X) )cJoyFlag &= ~JOY_BTN4_BIT;
+		if (input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y) )cJoyFlag &= ~JOY_BTN2_BIT;
+	}
 
 	s_cJoyFlag = cJoyFlag;
 

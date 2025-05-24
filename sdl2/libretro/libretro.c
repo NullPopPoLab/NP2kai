@@ -59,6 +59,14 @@
 
 #define CUSTOM_VERSION "+NC38"
 
+#define RETRO_DEVICE_JOYPAD_PORT       RETRO_DEVICE_SUBCLASS( RETRO_DEVICE_JOYPAD, 0 )
+#define RETRO_DEVICE_JOYPAD_DIRKEY     RETRO_DEVICE_SUBCLASS( RETRO_DEVICE_JOYPAD, 1 )
+
+#define MAX_INPUT_PLAYERS 2
+unsigned retro_input_device[MAX_INPUT_PLAYERS]={
+	RETRO_DEVICE_JOYPAD,RETRO_DEVICE_JOYPAD
+};
+
 extern AdvancedM3U *am3u;
 extern AdvancedM3UDevice *am3u_fd;
 extern AdvancedM3UDevice *am3u_hd;
@@ -105,6 +113,11 @@ struct retro_disk_control_ext2_callback dskcb;
 static unsigned disk_index = 0;
 //static bool disk_inserted = false;
 static unsigned int lastidx = 0;
+
+bool is_joypad_port_enabled(unsigned port){
+	if(port>=MAX_INPUT_PLAYERS)return false;
+	return retro_input_device[port]==RETRO_DEVICE_JOYPAD_PORT;
+}
 
 bool setdskeject(unsigned drive, bool ejected){
 
@@ -955,13 +968,14 @@ void retro_set_environment(retro_environment_t cb)
 {
    static const struct retro_controller_description port[] = {
       { "RetroPad",              RETRO_DEVICE_JOYPAD },
+      { "Pad to DirKey",         RETRO_DEVICE_JOYPAD_DIRKEY },
       { "RetroKeyboard",         RETRO_DEVICE_KEYBOARD },
       { 0 },
    };
 
    static const struct retro_controller_info ports[] = {
-      { port, 2 },
-      { port, 2 },
+      { port, sizeof(port)/sizeof(struct retro_controller_description) },
+      { port, sizeof(port)/sizeof(struct retro_controller_description) },
       { NULL, 0 },
    };
 
@@ -1843,8 +1857,9 @@ unsigned retro_api_version(void)
 
 void retro_set_controller_port_device(unsigned port, unsigned device)
 {
-   (void)port;
-   (void)device;
+	if(port>=retro_input_device)return;
+
+	retro_input_device[port]=device;
 }
 
 unsigned retro_get_region (void)
