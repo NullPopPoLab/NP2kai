@@ -793,6 +793,18 @@ struct retro_core_option_definition option_defs_us[] = {
     },
     "Keys"
   },
+  {
+    "np2kai_j2kpress",
+    "Analog stick pressure assignment on Joy2Key",
+    NULL,
+    {
+      {"None", NULL},
+      {"Keys", NULL},
+      {"Mouse", NULL},
+      {NULL, NULL},
+    },
+    "Keys"
+  },
    {
       "np2kai_left_analog2mouse_speed",
       "Left Stick to Mouse Speed",

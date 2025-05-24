@@ -505,6 +505,14 @@ typedef enum
 } eJ2KStick;
 static eJ2KStick j2k_stick=J2KSTICK_KEYS;
 
+typedef enum
+{
+	J2KPRESS_NONE=0,
+	J2KPRESS_KEYS,
+	J2KPRESS_MOUSE,
+} eJ2KPress;
+static eJ2KPress j2k_press=J2KPRESS_KEYS;
+
 void resetInput(void) {
   int i;
 
@@ -656,11 +664,14 @@ void updateInput(){
 		applyJ2K(RETRO_DEVICE_ID_JOYPAD_R, RETROK_F3);
 		applyJ2K(RETRO_DEVICE_ID_JOYPAD_L2, RETROK_F2);
 		applyJ2K(RETRO_DEVICE_ID_JOYPAD_R2, RETROK_F4);
-		applyJ2K(RETRO_DEVICE_ID_JOYPAD_L3, RETROK_PAUSE);
-		applyJ2K(RETRO_DEVICE_ID_JOYPAD_R3, RETROK_COPY);
 		applyJ2K(RETRO_DEVICE_ID_JOYPAD_START, RETROK_F5);
 		applyJ2K(RETRO_DEVICE_ID_JOYPAD_SELECT, RETROK_HOME);
 		applyJ2K(RETRO_DEVICE_ID_JOYPAD_MENU, RETROK_HELP);
+
+		if(j2k_press==J2KPRESS_KEYS){
+			applyJ2K(RETRO_DEVICE_ID_JOYPAD_L3, RETROK_PAUSE);
+			applyJ2K(RETRO_DEVICE_ID_JOYPAD_R3, RETROK_COPY);
+		}
 
 		switch(j2k_dir){
 			case J2KDIR_CURSOR:
@@ -912,6 +923,14 @@ void updateInput(){
 		// Mouse Buttons for Analog2Mouse and JoyPad 
 		if(input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L))mouse_l = 1;
 		if(input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R))mouse_r = 1;
+		break;
+
+		case RETRO_DEVICE_JOYPAD_DIRKEY:
+		// Mouse Buttons for Pad2Key 
+		if(j2k_press==J2KPRESS_MOUSE){
+			if(input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3))mouse_l = 1;
+			if(input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3))mouse_r = 1;
+		}
 		break;
 	}
 
@@ -1562,6 +1581,18 @@ static void update_variables(void)
 		j2k_stick=J2KSTICK_KEYS;
     } else {
 		j2k_stick=J2KSTICK_NONE;
+    }
+  }
+
+  var.key = "np2kai_j2kpress";
+  var.value = NULL;
+  if(environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+    if(!strcmp(var.value, "Mouse")) {
+		j2k_press=J2KPRESS_MOUSE;
+    } else if(!strcmp(var.value, "Keys")) {
+		j2k_press=J2KPRESS_KEYS;
+    } else {
+		j2k_press=J2KPRESS_NONE;
     }
   }
 
