@@ -422,6 +422,21 @@ static bool am3u_error(void* user,int code,int lineloc,const QTextRef* line){
 	return true;
 }
 
+int am3u_device_selector(void* user,const QTextRef* path){
+
+	int device=-1;
+	size_t len=qtext_len(path);
+	char* str=qtext_alloc_q(path);
+
+	if(np2_iscdimage(str,len))device='O';
+	else if(np2_ishdimage(str,len))device='H';
+	else if(np2_isfdimage(str,len))device='F';
+
+	qtext_free(&str);
+
+	return device;
+}
+
 char np2_main_read_m3u(const char *file)
 {
 	QLoaded* img=qload(file,false);
@@ -431,37 +446,24 @@ char np2_main_read_m3u(const char *file)
 	qtext_ref_q(&imgref,(const char*)qloaded_bgn(img),img->readsize);
 	QTextRef m3udir;
 	qpath_dirname_c(&m3udir,file);
-	am3u_setup_q(am3u,&imgref,&m3udir,am3u_error,NULL);
+	am3u_setup_q(am3u,&imgref,&m3udir,am3u_device_selector,am3u_error,NULL);
 	qunload(&img);
 
 	for(int i=0;i<am3u_fd->changee_used;++i){
 		const AdvancedM3UMedia* fd=&am3u_fd->changee_tbl[i];
 		if(!fd->ready)continue;
-//		strncpy(np2_main_disk_images_paths[i], fd->path, MAX_PATH-1);
 		fprintf(stderr, "FD img[%u]: %s\n",i,fd->path);
-	}
-	if(am3u_fd->slot_tbl[0]>=0){
-		const AdvancedM3UMedia* fd=&am3u_fd->changee_tbl[am3u_fd->slot_tbl[0]];
-//		quasi88_disk_insert(DRIVE_1, fd->path, 0, fd->readonly?1:0);
-		fprintf(stderr, "FD Drive 1: %s\n",fd->path);
-	}
-	if(am3u_fd->slot_tbl[1]>=0){
-		const AdvancedM3UMedia* fd=&am3u_fd->changee_tbl[am3u_fd->slot_tbl[1]];
-//		quasi88_disk_insert(DRIVE_2, fd->path, 0, fd->readonly?1:0);
-		fprintf(stderr, "FD Drive 2: %s\n",fd->path);
 	}
 
 	for(int i=0;i<am3u_hd->changee_used;++i){
 		const AdvancedM3UMedia* hd=&am3u_hd->changee_tbl[i];
 		if(!hd->ready)continue;
-//		retro_disks_append(fd->path);
 		fprintf(stderr, "HD img[%u]: %s\n",i,hd->path);
 	}
 
 	for(int i=0;i<am3u_cd->changee_used;++i){
 		const AdvancedM3UMedia* cd=&am3u_cd->changee_tbl[i];
 		if(!cd->ready)continue;
-//		retro_disks_append(fd->path);
 		fprintf(stderr, "CD img[%u]: %s\n",i,cd->path);
 	}
 
@@ -566,7 +568,6 @@ int np2_main(int argc, char *argv[]) {
 
 	// AdvancedM3U 
 	am3u=am3u_new();
-	am3u_set_default_device(am3u,'F');
 	am3u_fd=am3u_get_device(am3u,'F');
 	am3u_device_set_changer(am3u_fd,MAX_FD_IMAGES);
 	am3u_device_set_slots(am3u_fd,MAX_FD_DRIVES);
@@ -710,6 +711,7 @@ int np2_main(int argc, char *argv[]) {
 		for(j = 0; j < 4; j++) {
 			if(np2cfg.idetype[j] == SXSIDEV_CDROM) {
 				if(!(setmedia & (1 << j))) {
+					fprintf(stderr, "CD-%u slot[%u]: %s\n",j,np2_main_cd_images_count,media->path);
 					np2_main_cd_drv[np2_main_cd_images_count++] = j;
 					sxsi_devopen(j, media->path);
 					setmedia |= 1 << j;
@@ -728,6 +730,7 @@ int np2_main(int argc, char *argv[]) {
 			for(j = 0; j < 4; j++) {
 				if(np2cfg.idetype[j] == SXSIDEV_HDD) {
 					if(!(setmedia & (1 << j))) {
+						fprintf(stderr, "SASI-HD-%u slot[%u]: %s\n",j,HDCount,media->path);
 						milstr_ncpy(np2cfg.sasihdd[j], media->path, MAX_PATH-1);
 						setmedia |= 1 << j;
 						HDCount++;
@@ -738,6 +741,7 @@ int np2_main(int argc, char *argv[]) {
 		}
 		if(np2_ishdimage_scsi(media->path,strlen(media->path))){
 			if(drvhddSCSI < 4) {
+				fprintf(stderr, "SCSI-HD slot[%u]: %s\n",drvhddSCSI,media->path);
 				milstr_ncpy(np2cfg.scsihdd[drvhddSCSI], media->path, MAX_PATH-1);
 				drvhddSCSI++;
 			}
@@ -749,6 +753,7 @@ int np2_main(int argc, char *argv[]) {
 		if (am3u_fd->slot_tbl[i]<0) continue;
 		const AdvancedM3UMedia* media=&am3u_fd->changee_tbl[am3u_fd->slot_tbl[i]];
 		if(!media->ready)continue;
+		fprintf(stderr, "FD slot [%u]: %s\n",i,media->path);
 		diskdrv_setfdd(i, media->path, media->readonly);
 	}
 
