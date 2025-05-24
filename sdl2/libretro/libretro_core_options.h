@@ -795,23 +795,6 @@ struct retro_core_option_definition option_defs_us[] = {
     "R1"
   },
   {
-    "np2kai_joymode",
-    "Joypad D-pad to Mouse/Keyboard/Joypad Mapping",
-    "Emulate a keyboard/mouse/joypad on your gamepad. Map keyboard 'Arrows' or 'Keypad' on the D-pad.",
-    {
-      {"OFF", NULL},
-      {"Mouse", NULL},
-      {"Arrows", NULL},
-      {"Arrows 3button", NULL},
-      {"Keypad", NULL},
-      {"Keypad 3button", NULL},
-      {"Manual Keyboard", NULL},
-      {"Atari Joypad", NULL},
-      {NULL, NULL},
-    },
-    "OFF"
-  },
-  {
     "np2kai_joynp2menu",
     "Joypad to NP2 menu Mapping",
     "Select a gamepad button to open NP2 Menu.",
@@ -1616,23 +1599,6 @@ struct retro_core_option_definition option_defs_ja[] = {
       {NULL, NULL},
     },
     "R1"
-  },
-  {
-    "np2kai_joymode",
-    "ジョイパッド デジタルボタン マッピング",
-    "ジョイパッドのデジタルボタンをキーボード/マウス/ジョイパッドの操作に割り当てる。",
-    {
-      {"OFF", NULL},
-      {"Mouse", NULL},
-      {"Arrows", NULL},
-      {"Arrows 3button", NULL},
-      {"Keypad", NULL},
-      {"Keypad 3button", NULL},
-      {"Manual Keyboard", NULL},
-      {"Atari Joypad", NULL},
-      {NULL, NULL},
-    },
-    "OFF"
   },
   {
     "np2kai_joynp2menu",

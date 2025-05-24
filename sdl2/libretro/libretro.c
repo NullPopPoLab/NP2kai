@@ -472,17 +472,6 @@ void draw_cross(int x,int y) {
 
 }
 
-static enum {
-  LR_NP2KAI_JOYMODE_NONE = 0,
-  LR_NP2KAI_JOYMODE_KEY,
-  LR_NP2KAI_JOYMODE_MOUSE,
-  LR_NP2KAI_JOYMODE_ATARI,
-  LR_NP2KAI_JOYMODE_SB
-};
-static int m_tJoyMode;
-static int m_tJoyModeInt;
-static BOOL m_bJoyModeChange;
-
 static int lastx = 320, lasty = 240;
 static int menukey = 0;
 static int menu_active = 0;
@@ -587,17 +576,12 @@ void updateInput(){
   int w, h;
   uint32_t i;
 
-  if(m_bJoyModeChange) {
-    resetInput();
-  }
-  m_bJoyModeChange = FALSE;
-
   scrnmng_getsize(&w, &h);
 
   poll_cb();
 
   // --- input ATARI joypad
-  if(m_tJoyMode == LR_NP2KAI_JOYMODE_ATARI) {
+  if(retro_input_device[0] == RETRO_DEVICE_JOYPAD_PORT) {
     joymng_sync();
   }
 
@@ -626,7 +610,7 @@ void updateInput(){
   int input;
 
   // Joy2Key
-  if(m_tJoyMode == LR_NP2KAI_JOYMODE_KEY) {
+  if(retro_input_device[0] == RETRO_DEVICE_JOYPAD_DIRKEY) {
     for(i = 0; i < 12; i++) {
       input = input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i]);
       if(input && !abKeyStat[j2k_key[i]]) {
@@ -733,7 +717,7 @@ void updateInput(){
   }
 
   // Joy2Mouse
-  if(m_tJoyMode == LR_NP2KAI_JOYMODE_MOUSE) {
+  if(false/*m_tJoyMode == LR_NP2KAI_JOYMODE_MOUSE*/) {
     int j2m_move_x, j2m_move_y;
     int j2m_u, j2m_d, j2m_l, j2m_r;
 
@@ -855,7 +839,7 @@ void updateInput(){
   }
 
   // joy2mouse
-  if(m_tJoyMode == LR_NP2KAI_JOYMODE_MOUSE) {
+  if(false/*m_tJoyMode == LR_NP2KAI_JOYMODE_MOUSE*/) {
       int j2m_a = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A);
       int j2m_b = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B);
       if(j2m_a) {
@@ -1544,45 +1528,6 @@ static void update_variables(void)
     }
   }
 
-  var.key = "np2kai_joymode";
-  var.value = NULL;
-  if(environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
-    int preJoyModeInt = m_tJoyModeInt;
-    if(strcmp(var.value, "Mouse") == 0) {
-      m_tJoyMode = LR_NP2KAI_JOYMODE_MOUSE;
-      m_tJoyModeInt = 1;
-    } else if(strcmp(var.value, "Arrows") == 0) {
-      m_tJoyMode = LR_NP2KAI_JOYMODE_KEY;
-      memcpy(j2k_key, j2k_key_arrow, sizeof(uint16_t) * 12);
-      m_tJoyModeInt = 2;
-    } else if(strcmp(var.value, "Arrows 3button") == 0) {
-      m_tJoyMode = LR_NP2KAI_JOYMODE_KEY;
-      memcpy(j2k_key, j2k_key_arrow3, sizeof(uint16_t) * 12);
-      m_tJoyModeInt = 3;
-    } else if(strcmp(var.value, "Keypad") == 0) {
-      m_tJoyMode = LR_NP2KAI_JOYMODE_KEY;
-      memcpy(j2k_key, j2k_key_kpad, sizeof(uint16_t) * 12);
-      m_tJoyModeInt = 4;
-    } else if(strcmp(var.value, "Keypad 3button") == 0) {
-      m_tJoyMode = LR_NP2KAI_JOYMODE_KEY;
-      memcpy(j2k_key, j2k_key_kpad3, sizeof(uint16_t) * 12);
-      m_tJoyModeInt = 5;
-    } else if(strcmp(var.value, "Manual Keyboard") == 0) {
-      m_tJoyMode = LR_NP2KAI_JOYMODE_KEY;
-      memcpy(j2k_key, np2oscfg.lrjoybtn, sizeof(uint16_t) * 12);
-      m_tJoyModeInt = 6;
-    } else if(strcmp(var.value, "Atari Joypad") == 0) {
-      m_tJoyMode = LR_NP2KAI_JOYMODE_ATARI;
-      m_tJoyModeInt = 7;
-    } else {
-      m_tJoyMode = LR_NP2KAI_JOYMODE_NONE;
-      m_tJoyModeInt = 0;
-    }
-    if(m_tJoyModeInt != preJoyModeInt) {
-      m_bJoyModeChange = TRUE;
-    }
-  }
-
   var.key = "np2kai_joynp2menu";
   var.value = NULL;
   if(environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
@@ -1860,6 +1805,8 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 	if(port>=retro_input_device)return;
 
 	retro_input_device[port]=device;
+
+    resetInput();
 }
 
 unsigned retro_get_region (void)
