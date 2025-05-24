@@ -15,6 +15,7 @@ INCFLAGS :=	-I$(NP2_PATH) \
 	-I$(NP2_PATH)/generic \
 	-I$(NP2_PATH)/io \
 	-I$(NP2_PATH)/mem \
+	-I$(NP2_PATH)/mk5s \
 	-I$(NP2_PATH)/sound \
 	-I$(NP2_PATH)/sound/vermouth \
 	-I$(NP2_PATH)/sound/mame \
@@ -41,6 +42,11 @@ SOURCES_C :=	$(NP2_PATH)/calendar.c \
 	$(NP2_PATH)/diskimage/cd/cdd_iso.c \
 	$(NP2_PATH)/diskimage/cd/cdd_mds.c \
 	$(NP2_PATH)/diskimage/cd/cdd_nrg.c \
+	$(NP2_PATH)/mk5s/advanced_m3u.c \
+	$(NP2_PATH)/mk5s/quick_loader.c \
+	$(NP2_PATH)/mk5s/quick_path.c \
+	$(NP2_PATH)/mk5s/quick_text.c \
+	$(NP2_PATH)/mk5s/safe_alloc.c \
 	$(wildcard $(NP2_PATH)/diskimage/fd/*.c) \
 	$(wildcard $(NP2_PATH)/embed/*.c) \
 	$(wildcard $(NP2_PATH)/embed/menu/*.c) \
