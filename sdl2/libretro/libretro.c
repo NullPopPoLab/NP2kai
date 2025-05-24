@@ -55,7 +55,14 @@
 #include "cirrus_vga_extern.h"
 #endif	/* defined(SUPPORT_WAB) */
 
+#include "../../mk5s/advanced_m3u.h"
+
 #define CUSTOM_VERSION "+NC38"
+
+extern AdvancedM3U *am3u;
+extern AdvancedM3UDevice *am3u_fd;
+extern AdvancedM3UDevice *am3u_hd;
+extern AdvancedM3UDevice *am3u_cd;
 
 extern void sdlaudio_callback(void *userdata, unsigned char *stream, int len);
 
@@ -94,8 +101,6 @@ static void update_variables(void);
 
 /* media swap support */
 struct retro_disk_control_callback dskcb;
-extern char np2_main_disk_images_paths[50][MAX_PATH];
-extern unsigned int np2_main_disk_images_count;
 static unsigned drvno = 1;
 static unsigned disk_index = 0;
 static bool disk_inserted = false;
@@ -117,32 +122,41 @@ unsigned getdskindex(){
 
 bool setdskindex(unsigned index){
    disk_index = index;
-   if(disk_index == np2_main_disk_images_count)
+   if(disk_index >= am3u_fd->changee_used)
    {
       //retroarch is trying to set "no disk in tray"
       return true;
    }
 
+	am3u_fd->slot_tbl[drvno]=disk_index;
+	const AdvancedM3UMedia* media=&am3u_fd->changee_tbl[disk_index];
+
    update_variables();
-   strcpy(np2cfg.fddfile[drvno], np2_main_disk_images_paths[disk_index]);
-   diskdrv_setfdd(drvno, np2_main_disk_images_paths[disk_index], 0);
+   strcpy(np2cfg.fddfile[drvno], media->path);
+   diskdrv_setfdd(drvno, media->path, media->readonly);
    return true;
 }
 
 unsigned getnumimages(){
-   return np2_main_disk_images_count;
+   return am3u_fd->changee_used;
 }
 
 bool addimageindex() {
-   if (np2_main_disk_images_count >= 50)
+   if (am3u_fd->changee_used >= am3u_fd->changee_max)
       return false;
 
-   np2_main_disk_images_count++;
+   am3u_fd->changee_used++;
    return true;
 }
 
 bool replacedsk(unsigned index,const struct retro_game_info *info){
-   strcpy(np2_main_disk_images_paths[index], info->path);
+
+	AdvancedM3UMedia* media=&am3u_fd->changee_tbl[index];
+
+	QTextRef qpath;
+	qtext_ref_c(&qpath,info->path);
+	am3u_media_set(media,false,NULL,&qpath,NULL);
+
    return true;
 }
 
@@ -155,7 +169,7 @@ void attach_disk_swap_interface(){
    dskcb.get_num_images  = getnumimages;
    dskcb.add_image_index = addimageindex;
    dskcb.replace_image_index = replacedsk;
-   if(np2_main_disk_images_count) {
+   if(getnumimages()) {
       disk_inserted = true;
    }
 
@@ -163,8 +177,8 @@ void attach_disk_swap_interface(){
 }
 
 void setnxtdskindex(void){
-	if(np2_main_disk_images_count > 2) {
-		if(disk_index + 1 != np2_main_disk_images_count) {
+	if(getnumimages() > 2) {
+		if(disk_index + 1 != getnumimages()) {
 			setdskindex(disk_index + 1);
 		} else {
 			setdskindex(0);
@@ -173,9 +187,9 @@ void setnxtdskindex(void){
 }
 
 void setpredskindex(void){
-	if(np2_main_disk_images_count > 2) {
+	if(getnumimages() > 2) {
 		if(disk_index == 0) {
-			setdskindex(np2_main_disk_images_count - 1);
+			setdskindex(getnumimages() - 1);
 		} else {
 			setdskindex(disk_index - 1);
 		}
