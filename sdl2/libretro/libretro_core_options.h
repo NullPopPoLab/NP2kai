@@ -788,36 +788,89 @@ struct retro_core_option_definition option_defs_us[] = {
     {
       {"None", NULL},
       {"Keys", NULL},
+      {"Mouse", NULL},
       {NULL, NULL},
     },
     "Keys"
   },
-  {
-    "np2kai_stick2mouse",
-    "S2M(Joypad Analog Stick to Mouse) Mapping",
-    "Emulate a mouse on your gamepad's analog stick.",
-    {
-      {"OFF", NULL},
-      {"L-stick", NULL},
-      {"R-stick", NULL},
-      {NULL, NULL},
-    },
-    "R-stick"
-  },
-  {
-    "np2kai_stick2mouse_shift",
-    "S2M Click Shift Button Mapping",
-    "Stick push shift to left->right click.",
-    {
-      {"OFF", NULL},
-      {"L1", NULL},
-      {"L2", NULL},
-      {"R1", NULL},
-      {"R2", NULL},
-      {NULL, NULL},
-    },
-    "R1"
-  },
+   {
+      "np2kai_left_analog2mouse_speed",
+      "Left Stick to Mouse Speed",
+      NULL,
+      {
+         { "0", NULL },
+         { "1", NULL },
+         { "2", NULL },
+         { "3", NULL },
+         { "4", NULL },
+         { "5", NULL },
+         { "6", NULL },
+         { "7", NULL },
+         { "8", NULL },
+         { "9", NULL },
+         { "10", NULL },
+         { "11", NULL },
+         { "12", NULL },
+         { "13", NULL },
+         { "14", NULL },
+         { "15", NULL },
+         { "16", NULL },
+         { "17", NULL },
+         { "18", NULL },
+         { "19", NULL },
+         { "20", NULL },
+         { NULL,       NULL },
+      },
+      "12"
+   },
+   {
+      "np2kai_right_analog2mouse_speed",
+      "Right Stick to Mouse Speed",
+      NULL,
+      {
+         { "0", NULL },
+         { "1", NULL },
+         { "2", NULL },
+         { "3", NULL },
+         { "4", NULL },
+         { "5", NULL },
+         { "6", NULL },
+         { "7", NULL },
+         { "8", NULL },
+         { "9", NULL },
+         { "10", NULL },
+         { "11", NULL },
+         { "12", NULL },
+         { "13", NULL },
+         { "14", NULL },
+         { "15", NULL },
+         { "16", NULL },
+         { "17", NULL },
+         { "18", NULL },
+         { "19", NULL },
+         { "20", NULL },
+         { NULL,       NULL },
+      },
+      "3"
+   },
+   {
+      "np2kai_analog2mouse_deadzone",
+      "Stick to Mouse Friction",
+      NULL,
+      {
+         { "0", NULL },
+         { "1", NULL },
+         { "2", NULL },
+         { "3", NULL },
+         { "4", NULL },
+         { "5", NULL },
+         { "6", NULL },
+         { "7", NULL },
+         { "8", NULL },
+         { NULL,       NULL },
+      },
+      "2"
+   },
   {NULL, NULL, NULL, {{0}}, NULL},
 };
 
@@ -1565,32 +1618,6 @@ struct retro_core_option_definition option_defs_ja[] = {
       },
       "ON"
    },
-  {
-    "np2kai_stick2mouse",
-    "S2M(ジョイパッド アナログスティック->マウス マッピング",
-    "ジョイパッドのアナログスティックをマウスに割り当てる。",
-    {
-      {"OFF", NULL},
-      {"L-stick", NULL},
-      {"R-stick", NULL},
-      {NULL, NULL},
-    },
-    "R-stick"
-  },
-  {
-    "np2kai_stick2mouse_shift",
-    "S2M クリックシフトボタン マッピング",
-    "スティック押し込みを左→右クリックにシフトするボタンを割り当てる。",
-    {
-      {"OFF", NULL},
-      {"L1", NULL},
-      {"L2", NULL},
-      {"R1", NULL},
-      {"R2", NULL},
-      {NULL, NULL},
-    },
-    "R1"
-  },
   {NULL, NULL, NULL, {{0}}, NULL},
 };
 
