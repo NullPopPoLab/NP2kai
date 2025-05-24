@@ -106,7 +106,6 @@ static unsigned disk_index = 0;
 //static bool disk_inserted = false;
 static unsigned int lastidx = 0;
 
-//all the fake functions used to limit swapping to 1 disk drive
 bool setdskeject(unsigned drive, bool ejected){
 
 	if(ejected){
