@@ -28,17 +28,6 @@ extern "C" {
 
 struct retro_core_option_definition option_defs_us[] = {
    {
-      "np2kai_drive",
-      "Swap Disks on Drive",
-      NULL,
-      {
-         { "FDD1", NULL },
-         { "FDD2", NULL },
-         { NULL, NULL},
-      },
-      "FDD2"
-   },
-   {
       "np2kai_keyboard",
       "Keyboard (Restart)",
       "Japanese or US keyboard type.",

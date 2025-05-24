@@ -470,7 +470,6 @@ char np2_main_read_m3u(const char *file)
 
 #if defined(__LIBRETRO__)
 extern char lr_game_base_dir[MAX_PATH];
-extern void attach_disk_swap_interface(void);
 extern int lr_uselasthddmount;
 #endif
 
@@ -603,9 +602,6 @@ int np2_main(int argc, char *argv[]) {
 			qtext_ref_c(&qpath,fullpath);
 			am3u_device_add_media(am3u_fd,(am3u_fd->changee_used<am3u_fd->slot_max)?(1+am3u_fd->changee_used):0,false,NULL,&qpath,NULL);
 		}
-#if defined(__LIBRETRO__)
-		attach_disk_swap_interface();
-#endif
 
 #if defined(SUPPORT_IDEIO) || defined(SUPPORT_SASI) || defined(SUPPORT_SCSI)
 		if(imagetype == IMAGETYPE_UNKNOWN) {
