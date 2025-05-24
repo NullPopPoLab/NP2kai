@@ -769,6 +769,19 @@ struct retro_core_option_definition option_defs_us[] = {
       "ON"
    },
   {
+    "np2kai_j2kdir",
+    "Direction key assignment on Joy2Key",
+    NULL,
+    {
+      {"Cursor", NULL},
+      {"TenKey4", "4 directions of Ten Key"},
+      {"TenKey8", "8 directions of Ten Key"},
+      {"Mouse", NULL},
+      {NULL, NULL},
+    },
+    "R-stick"
+  },
+  {
     "np2kai_stick2mouse",
     "S2M(Joypad Analog Stick to Mouse) Mapping",
     "Emulate a mouse on your gamepad's analog stick.",
