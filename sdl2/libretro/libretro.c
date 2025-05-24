@@ -92,7 +92,7 @@ retro_audio_sample_batch_t audio_batch_cb = NULL;
 
 static char CMDFILE[1024];
 
-bool did_reset, joy2key;
+bool did_reset;
 int lr_init = 0;
 
 char lr_game_base_dir[MAX_PATH];
@@ -483,79 +483,19 @@ static int joyNP2menubtn;
 static int s2m;
 static int s2m_no;
 static uint8_t s2m_shift;
-static BOOL abKeyStat[0x200];
+static uint8_t abKeyStat[RETROK_LAST];
+static bool kbdf[RETROK_LAST];
+static bool padf[RETRO_DEVICE_ID_JOYPAD_BIND_MAX];
+static bool jtkf[10];
 
-static int j2k_pad[12] = { 
-   RETRO_DEVICE_ID_JOYPAD_UP,
-   RETRO_DEVICE_ID_JOYPAD_DOWN,
-   RETRO_DEVICE_ID_JOYPAD_LEFT,
-   RETRO_DEVICE_ID_JOYPAD_RIGHT,
-   RETRO_DEVICE_ID_JOYPAD_A,
-   RETRO_DEVICE_ID_JOYPAD_B,
-   RETRO_DEVICE_ID_JOYPAD_X,
-   RETRO_DEVICE_ID_JOYPAD_Y,
-   RETRO_DEVICE_ID_JOYPAD_L,
-   RETRO_DEVICE_ID_JOYPAD_R,
-   RETRO_DEVICE_ID_JOYPAD_SELECT,
-   RETRO_DEVICE_ID_JOYPAD_START
-};
-static uint16_t j2k_key[12];
-static uint16_t j2k_key_arrow[12] = { 
-   RETROK_UP,
-   RETROK_DOWN,
-   RETROK_LEFT,
-   RETROK_RIGHT,
-   RETROK_x,
-   RETROK_z,
-   RETROK_SPACE,
-   RETROK_LCTRL,
-   RETROK_BACKSPACE,
-   RETROK_RSHIFT,
-   RETROK_ESCAPE,
-   RETROK_RETURN
-};
-static uint16_t j2k_key_arrow3[12] = { 
-   RETROK_UP,
-   RETROK_DOWN,
-   RETROK_LEFT,
-   RETROK_RIGHT,
-   RETROK_c,
-   RETROK_x,
-   RETROK_SPACE,
-   RETROK_z,
-   RETROK_BACKSPACE,
-   RETROK_RSHIFT,
-   RETROK_ESCAPE,
-   RETROK_RETURN
-};
-static uint16_t j2k_key_kpad[12] = { 
-   RETROK_KP8,
-   RETROK_KP2,
-   RETROK_KP4,
-   RETROK_KP6,
-   RETROK_x,
-   RETROK_z,
-   RETROK_SPACE,
-   RETROK_LCTRL,
-   RETROK_BACKSPACE,
-   RETROK_RSHIFT,
-   RETROK_ESCAPE,
-   RETROK_RETURN
-};
-static uint16_t j2k_key_kpad3[12] = { 
-   RETROK_KP8,
-   RETROK_KP2,
-   RETROK_KP4,
-   RETROK_KP6,
-   RETROK_c,
-   RETROK_x,
-   RETROK_SPACE,
-   RETROK_z,
-   RETROK_BACKSPACE,
-   RETROK_RSHIFT,
-   RETROK_ESCAPE,
-   RETROK_RETURN
-};
+typedef enum
+{
+	J2KDIR_CURSOR=0,
+	J2KDIR_TENKEY4,
+	J2KDIR_TENKEY8,
+	J2KDIR_MOUSE,
+} eJ2KDdir;
+static eJ2KDdir j2k_dir=J2KDIR_CURSOR;
 
 void resetInput(void) {
   int i;
@@ -563,12 +503,100 @@ void resetInput(void) {
   menukey = 0;
   j2m_l_down = 0;
   j2m_r_down = 0;
-  for(i = 0; i < keys_needed; i++) {
-    abKeyStat[i] = FALSE;
-  }
+  memset(abKeyStat,0,sizeof(abKeyStat));
+  memset(kbdf,0,sizeof(kbdf));
+  memset(padf,0,sizeof(padf));
+  memset(jtkf,0,sizeof(jtkf));
   joymng_sync();
 	reset_lrkey();
   keystat_allrelease();
+}
+
+static void applyI2K(int input,int key,bool* flg){
+
+	if(input && !*flg) {
+		if(++abKeyStat[key]==1)send_libretro_key_down(key);
+	} else if(!input && *flg) {
+		if(--abKeyStat[key]==0)send_libretro_key_up(key);
+	}
+	*flg=input;
+}
+
+static void applyJ2K(int joy,int key){
+
+	int input = input_cb(0, RETRO_DEVICE_JOYPAD, 0, joy);
+	applyI2K(input,key,&padf[joy]);
+}
+
+static void applyK2K(int key){
+
+	int input;
+	switch(key){
+		case RETROK_KP1:
+		if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, key))input=true;
+		else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) &&
+			input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147))input=true;
+		else input=false;
+		break;
+
+		case RETROK_KP2:
+		if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, key))input=true;
+		else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) &&
+			!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147) && 
+			!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369))input=true;
+		else input=false;
+		break;
+
+		case RETROK_KP3:
+		if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, key))input=true;
+		else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) &&
+			input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369))input=true;
+		else input=false;
+		break;
+
+		case RETROK_KP4:
+		if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, key))input=true;
+		else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147) &&
+			!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) && 
+			!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789))input=true;
+		else input=false;
+		break;
+
+		case RETROK_KP6:
+		if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, key))input=true;
+		else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369) &&
+			!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) && 
+			!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789))input=true;
+		else input=false;
+		break;
+
+		case RETROK_KP7:
+		if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, key))input=true;
+		else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789) &&
+			input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147))input=true;
+		else input=false;
+		break;
+
+		case RETROK_KP8:
+		if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, key))input=true;
+		else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789) &&
+			!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147) && 
+			!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369))input=true;
+		else input=false;
+		break;
+
+		case RETROK_KP9:
+		if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, key))input=true;
+		else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789) &&
+			input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369))input=true;
+		else input=false;
+		break;
+
+		default:
+	      input = input_cb(0, RETRO_DEVICE_KEYBOARD, 0, key);
+	}
+
+	applyI2K(input,key,&kbdf[key]);
 }
 
 void updateInput(){
@@ -607,98 +635,102 @@ void updateInput(){
   }
 
   // --- input key
-  int input;
 
   // Joy2Key
   if(retro_input_device[0] == RETRO_DEVICE_JOYPAD_DIRKEY) {
-    for(i = 0; i < 12; i++) {
-      input = input_cb(0, RETRO_DEVICE_JOYPAD, 0, j2k_pad[i]);
-      if(input && !abKeyStat[j2k_key[i]]) {
-        send_libretro_key_down(j2k_key[i]);
-        abKeyStat[j2k_key[i]] = TRUE;
-      } else if(!input && abKeyStat[j2k_key[i]]) {
-        send_libretro_key_up(j2k_key[i]);
-        abKeyStat[j2k_key[i]] = FALSE;
-      }
-    }
-  // keyboard
-  } else {
-    for(i = 0; i < keys_needed; i++) {
-      UINT k=keys_poll[i].lrkey;
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_A, RETROK_c);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_B, RETROK_x);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_C, RETROK_z);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_X, RETROK_RETURN);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_Y, RETROK_SPACE);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_Z, RETROK_BACKSPACE);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_L, RETROK_F1);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_R, RETROK_F3);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_L2, RETROK_F2);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_R2, RETROK_F4);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_L3, RETROK_PAUSE);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_R3, RETROK_COPY);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_START, RETROK_F5);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_SELECT, RETROK_HOME);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_MENU, RETROK_HELP);
 
-		switch(k){
-			case RETROK_KP1:
-			if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))input=true;
-			else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) &&
-				input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147))input=true;
-			else input=false;
+		switch(j2k_dir){
+			case J2KDIR_CURSOR:
+			applyJ2K(RETRO_DEVICE_ID_JOYPAD_UP, RETROK_UP);
+			applyJ2K(RETRO_DEVICE_ID_JOYPAD_DOWN, RETROK_DOWN);
+			applyJ2K(RETRO_DEVICE_ID_JOYPAD_LEFT, RETROK_LEFT);
+			applyJ2K(RETRO_DEVICE_ID_JOYPAD_RIGHT, RETROK_RIGHT);
 			break;
 
-			case RETROK_KP2:
-			if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))input=true;
-			else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) &&
-				!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147) && 
-				!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369))input=true;
-			else input=false;
+			case J2KDIR_TENKEY4:
+			applyJ2K(RETRO_DEVICE_ID_JOYPAD_UP, RETROK_KP8);
+			applyJ2K(RETRO_DEVICE_ID_JOYPAD_DOWN, RETROK_KP2);
+			applyJ2K(RETRO_DEVICE_ID_JOYPAD_LEFT, RETROK_KP4);
+			applyJ2K(RETRO_DEVICE_ID_JOYPAD_RIGHT, RETROK_KP6);
 			break;
 
-			case RETROK_KP3:
-			if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))input=true;
-			else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) &&
-				input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369))input=true;
-			else input=false;
+			case J2KDIR_TENKEY8:
+			applyI2K(
+				input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) &&
+				input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)
+				,RETROK_KP1,&jtkf[1]
+			);
+			applyI2K(
+				input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) &&
+				!input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) &&
+				!input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT)
+				,RETROK_KP2,&jtkf[2]
+			);
+			applyI2K(
+				input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN) &&
+				input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT)
+				,RETROK_KP3,&jtkf[3]
+			);
+			applyI2K(
+				input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) &&
+				!input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) &&
+				!input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)
+				,RETROK_KP4,&jtkf[4]
+			);
+			applyI2K(
+				input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT) &&
+				!input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) &&
+				!input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)
+				,RETROK_KP6,&jtkf[6]
+			);
+			applyI2K(
+				input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) &&
+				input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)
+				,RETROK_KP7,&jtkf[7]
+			);
+			applyI2K(
+				input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) &&
+				!input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT) &&
+				!input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT)
+				,RETROK_KP8,&jtkf[8]
+			);
+			applyI2K(
+				input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP) &&
+				input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT)
+				,RETROK_KP9,&jtkf[9]
+			);
 			break;
-
-			case RETROK_KP4:
-			if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))input=true;
-			else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147) &&
-				!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) && 
-				!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789))input=true;
-			else input=false;
-			break;
-
-			case RETROK_KP6:
-			if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))input=true;
-			else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369) &&
-				!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP123) && 
-				!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789))input=true;
-			else input=false;
-			break;
-
-			case RETROK_KP7:
-			if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))input=true;
-			else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789) &&
-				input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147))input=true;
-			else input=false;
-			break;
-
-			case RETROK_KP8:
-			if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))input=true;
-			else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789) &&
-				!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP147) && 
-				!input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369))input=true;
-			else input=false;
-			break;
-
-			case RETROK_KP9:
-			if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k))input=true;
-			else if(input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP789) &&
-				input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_KP369))input=true;
-			else input=false;
-			break;
-
-			default:
-		      input = input_cb(0, RETRO_DEVICE_KEYBOARD, 0, k);
 		}
 
-      if(input && !abKeyStat[k]) {
-        send_libretro_key_down(k);
-        abKeyStat[k] = TRUE;
-      } else if(!input && abKeyStat[k]) {
-        send_libretro_key_up(k);
-        abKeyStat[k] = FALSE;
-      }
-    }
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_LEFT_ANALOG_UP, RETROK_ESCAPE);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_LEFT_ANALOG_DOWN, RETROK_LSHIFT);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_LEFT_ANALOG_LEFT, RETROK_LCTRL);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_LEFT_ANALOG_RIGHT, RETROK_RCTRL);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_RIGHT_ANALOG_UP, RETROK_PAGEDOWN);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_RIGHT_ANALOG_DOWN, RETROK_PAGEUP);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_RIGHT_ANALOG_LEFT, RETROK_CAPSLOCK);
+		applyJ2K(RETRO_DEVICE_ID_JOYPAD_RIGHT_ANALOG_RIGHT, RETROK_KANA);
+
+  }
+  // keyboard
+  for(i = 0; i < keys_needed; i++) {
+		UINT k=keys_poll[i].lrkey;
+		applyK2K(k);
   }
 
   // --- move mouse
@@ -717,7 +749,7 @@ void updateInput(){
   }
 
   // Joy2Mouse
-  if(false/*m_tJoyMode == LR_NP2KAI_JOYMODE_MOUSE*/) {
+  if(retro_input_device[0] == RETRO_DEVICE_JOYPAD_DIRKEY && j2k_dir == J2KDIR_MOUSE) {
     int j2m_move_x, j2m_move_y;
     int j2m_u, j2m_d, j2m_l, j2m_r;
 
@@ -1497,6 +1529,20 @@ static void update_variables(void)
       else
          np2cfg.usecdecc = 0;
    }
+
+  var.key = "np2kai_j2kdir";
+  var.value = NULL;
+  if(environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+    if(!strcmp(var.value, "TenKey4")) {
+		j2k_dir=J2KDIR_TENKEY4;
+    } else if(!strcmp(var.value, "TenKey8")) {
+		j2k_dir=J2KDIR_TENKEY8;
+    } else if(!strcmp(var.value, "Mouse")) {
+		j2k_dir=J2KDIR_MOUSE;
+    } else {
+		j2k_dir=J2KDIR_CURSOR;
+    }
+  }
 
   var.key = "np2kai_stick2mouse";
   var.value = NULL;
