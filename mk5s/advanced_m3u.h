@@ -24,6 +24,7 @@
 #define AM3U_ERROR_INVALID_SLOT 4
 #define AM3U_ERROR_EMPTY_PATH 5
 #define AM3U_ERROR_CHANGEE_OVER 6
+#define AM3U_ERROR_UNKNOWN_DEVICE 7
 
 //! Advanced M3U instance 
 typedef struct AdvancedM3U_ AdvancedM3U;
@@ -41,6 +42,13 @@ typedef struct AdvancedM3UMedia_ AdvancedM3UMedia;
 	@retval true  the caller function is continueable
 */
 typedef bool (*AdvancedM3UParseError)(void* user,int code,int lineloc,const QTextRef* line);
+
+//! call by unknown device file 
+/*!	@param user  any user pointer
+	@param path  source path
+	@return device letter (or others are meaning invalid)
+*/
+typedef int (*AdvancedM3UDeviceSelector)(void* user,const QTextRef* path);
 
 struct AdvancedM3UMedia_{
 	bool ready;
@@ -77,12 +85,13 @@ void am3u_reset(AdvancedM3U* inst);
 //! parse M3U source and put into target AdvancedM3U instance 
 /*!	@param inst  target instance
 	@param src  M3U source
+	@param cbsel  callback by unknown device file
 	@param cberr  callback by each error
 	@param user  any user pointer
 	@retval false  procudure aborted
 	@retval true  procudure completed
 */
-bool am3u_setup_q(AdvancedM3U* inst,const QTextRef* src,const QTextRef* basedir,AdvancedM3UParseError cberr,void* user);
+bool am3u_setup_q(AdvancedM3U* inst,const QTextRef* src,const QTextRef* basedir,AdvancedM3UDeviceSelector cbsel,AdvancedM3UParseError cberr,void* user);
 
 //! set default device for standard M3U lines 
 /*!	@param inst  target AdvancedM3U instance
@@ -136,18 +145,30 @@ AdvancedM3UMedia* am3u_device_get_media(AdvancedM3UDevice* inst,int slot);
 */
 bool am3u_device_set_media(AdvancedM3UDevice* inst,int slot,int idx);
 
+//! reset media entry 
+/*!	@param inst  target media instance
+	@note inst becomes empty
+*/
 void am3u_media_reset(AdvancedM3UMedia* inst);
+
+//! replace media entry 
+/*!	@param inst  target media instance
+	@param readonly  new source media is read only
+	@param basedir  base directory (nullable, means fullpath)
+	@param path  media path
+	@param label  custom label (nullable)
+*/
 void am3u_media_set(AdvancedM3UMedia* inst,bool readonly,const QTextRef* basedir,const QTextRef* path,const QTextRef* label);
 
 #ifdef __cplusplus
 }
 #endif
 
-inline bool am3u_setup_c(AdvancedM3U* inst,const char* src,const char* basedir,AdvancedM3UParseError cberr,void* user){
+inline bool am3u_setup_c(AdvancedM3U* inst,const char* src,const char* basedir,AdvancedM3UDeviceSelector cbsel,AdvancedM3UParseError cberr,void* user){
 	QTextRef src_q,basedir_q;
 	qtext_ref_c(&src_q,src);
 	qtext_ref_c(&basedir_q,basedir);
-	return am3u_setup_q(inst,&src_q,&basedir_q,cberr,user);
+	return am3u_setup_q(inst,&src_q,&basedir_q,cbsel,cberr,user);
 }
 
 //! remove a media from a device slot 

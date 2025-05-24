@@ -37,13 +37,14 @@ void am3u_reset(AdvancedM3U* inst){
 	for(c=AM3U_DEVICE_MIN;c<=AM3U_DEVICE_MAX;++c){
 		am3u_device_reset(&inst->device_tbl[c-AM3U_DEVICE_MIN]);
 	}
-	inst->device_default=0;
+	inst->device_default=-1;
 }
 
 /* -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- */
 typedef struct AdvancedM3UParseWork_{
 	AdvancedM3U* inst;
 	AdvancedM3UParseError cberr;
+	AdvancedM3UDeviceSelector cbsel;
 	void* user;
 	int lineloc;
 	const QTextRef* line;
@@ -132,17 +133,6 @@ static bool am3u_parse_line(void* user,const QTextRef* line){
 			return am3u_parse_error(work,AM3U_ERROR_SYNTAX);
 		}
 	}
-	else{
-		// Standard Line 
-		// try sequential slot number
-		slot=inst->device_tbl[device].changee_used+1;
-		if(slot>inst->device_tbl[device].slot_max)slot=0;
-		else if(inst->device_tbl[device].slot_tbl[slot-1]>=0)slot=0;
-	}
-
-	if(inst->device_tbl[device].changee_used>=inst->device_tbl[device].changee_max){
-		return am3u_parse_error(work,AM3U_ERROR_CHANGEE_OVER);
-	}
 
 	// split custom label 
 	const char* lp=memchr(cur,'|',end-cur);
@@ -161,6 +151,26 @@ static bool am3u_parse_line(void* user,const QTextRef* line){
 		label=path;
 	}
 
+	if(device<0){
+		// try select a device 
+		if(work->cbsel){
+			device=work->cbsel(work->user,&path)-AM3U_DEVICE_MIN;
+		}
+
+		if(device<0){
+			return am3u_parse_error(work,AM3U_ERROR_UNKNOWN_DEVICE);
+		}
+
+		// try sequential slot number
+		slot=inst->device_tbl[device].changee_used+1;
+		if(slot>inst->device_tbl[device].slot_max)slot=0;
+		else if(inst->device_tbl[device].slot_tbl[slot-1]>=0)slot=0;
+	}
+
+	if(inst->device_tbl[device].changee_used>=inst->device_tbl[device].changee_max){
+		return am3u_parse_error(work,AM3U_ERROR_CHANGEE_OVER);
+	}
+
 	// known errors are already detected
 	// other errors means unknown
 
@@ -171,11 +181,12 @@ static bool am3u_parse_line(void* user,const QTextRef* line){
 }
 
 /* ----------------------------------------------------------------------- */
-bool am3u_setup_q(AdvancedM3U* inst,const QTextRef* src,const QTextRef* basedir,AdvancedM3UParseError cberr,void* user){
+bool am3u_setup_q(AdvancedM3U* inst,const QTextRef* src,const QTextRef* basedir,AdvancedM3UDeviceSelector cbsel,AdvancedM3UParseError cberr,void* user){
 
 	AdvancedM3UParseWork work;
 	work.inst=inst;
 	work.basedir=basedir;
+	work.cbsel=cbsel;
 	work.cberr=cberr;
 	work.user=user;
 	work.lineloc=0;
