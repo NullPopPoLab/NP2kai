@@ -840,17 +840,6 @@ struct retro_core_option_definition option_defs_us[] = {
 
 struct retro_core_option_definition option_defs_ja[] = {
    {
-      "np2kai_drive",
-      "ディスク入れ替えドライブ",
-      NULL,
-      {
-         { "FDD1", NULL },
-         { "FDD2", NULL },
-         { NULL, NULL},
-      },
-      "FDD2"
-   },
-   {
       "np2kai_keyboard",
       "キーボード形式 (要リスタート)",
       "日本語106、もしくは英語101",
