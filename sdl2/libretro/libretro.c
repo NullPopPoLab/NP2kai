@@ -630,7 +630,7 @@ void updateInput(){
   }
 
   // --- input NP2 menu
-  int menu_key_f12 = input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_F12);
+  int menu_key_f12 = input_cb(0, RETRO_DEVICE_KEYBOARD, 0, RETROK_SCROLLOCK);
   int menu_mouse_m = input_cb(0, RETRO_DEVICE_MOUSE, 0, RETRO_DEVICE_ID_MOUSE_MIDDLE);
   int menu_joy_menu = input_cb(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_G8);
 
