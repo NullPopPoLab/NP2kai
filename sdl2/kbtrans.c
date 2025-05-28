@@ -21,7 +21,7 @@ static const LRKCNV lrcnv101[] = {
   // test result on Linux Twocode/caNnotpush/Miss/Different
   {RETROK_BREAK,        0x60},  // STOP
   {RETROK_PAUSE,        0x60},  // STOP
-  {RETROK_COPY,         0x61},  // COPY
+  {RETROK_F12,          0x61},  // COPY
   {RETROK_F1,           0x62},  // f.1
   {RETROK_F2,           0x63},  // f.2
   {RETROK_F3,           0x64},  // f.3
@@ -132,7 +132,7 @@ static const LRKCNV lrcnv106[] = {
   // test result on Linux Twocode/caNnotpush/Miss/Different
   {RETROK_BREAK,        0x60},  // STOP
   {RETROK_PAUSE,        0x60},  // STOP
-  {RETROK_COPY,         0x61},  // COPY
+  {RETROK_F12,          0x61},  // COPY
   {RETROK_F1,           0x62},  // f.1
   {RETROK_F2,           0x63},  // f.2
   {RETROK_F3,           0x64},  // f.3
