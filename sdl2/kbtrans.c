@@ -256,6 +256,9 @@ void reset_lrkey() {
   memset(key_states, 0, sizeof(key_states));
 }
 
+static bool toggle_caps=false;
+static bool toggle_kana=false;
+
 void send_libretro_key_down(UINT lrkey) {
   size_t i;
   uint8_t keycode;
@@ -271,11 +274,32 @@ void send_libretro_key_down(UINT lrkey) {
   for (i = 0; i < keys_needed; i++) {
     if(keys_poll[i].keycode != NC) {
       if(keys_poll[i].lrkey == lrkey) {
+        bool side=true;
         keycode = keys_poll[i].keycode;
-        if(!key_states[keycode]) {
-          keystat_keydown(keycode);
-          key_states[keycode] = true;
+        switch(keycode){
+            case 0x71: // caps 
+            toggle_caps=!toggle_caps;
+            side=toggle_caps;
+            break;
+            case 0x72: // kana
+            toggle_kana=!toggle_kana;
+            side=toggle_kana;
+            break;
         }
+
+        if(side){
+            if(!key_states[keycode]) {
+              keystat_keydown(keycode);
+              key_states[keycode] = true;
+            }
+        }
+        else{
+            if(key_states[keycode]) {
+              keystat_keyup(keycode);
+              key_states[keycode] = false;
+            }
+        }
+
         break;
       }
     }
@@ -298,6 +322,8 @@ void send_libretro_key_up(UINT lrkey) {
     if(keys_poll[i].keycode != NC && key_states[keys_poll[i].keycode]) {
       if(keys_poll[i].lrkey == lrkey) {
         keycode = keys_poll[i].keycode;
+        if(keycode==0x71)continue; // for toggle caps 
+        if(keycode==0x72)continue; // for toggle kana  
         if(key_states[keycode]) {
           keystat_keyup(keycode);
           key_states[keycode] = false;
