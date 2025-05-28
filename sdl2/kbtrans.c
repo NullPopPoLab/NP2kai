@@ -19,8 +19,9 @@ static bool key_states[0x100];
 /* 101 keyboard key table */
 static const LRKCNV lrcnv101[] = {
   // test result on Linux Twocode/caNnotpush/Miss/Different
+  {RETROK_BREAK,        0x60},  // STOP
   {RETROK_PAUSE,        0x60},  // STOP
-  {RETROK_PRINT,        0x61},  // COPY
+  {RETROK_COPY,         0x61},  // COPY
   {RETROK_F1,           0x62},  // f.1
   {RETROK_F2,           0x63},  // f.2
   {RETROK_F3,           0x64},  // f.3
@@ -45,7 +46,7 @@ static const LRKCNV lrcnv101[] = {
   {RETROK_0,            0x0a},  // 0 0
   {RETROK_MINUS,        0x0b},  // - =
   {RETROK_EQUALS,       0x0c},  // ^ `
-  {RETROK_BACKSLASH,    0x0d},  // Yen |
+  {RETROK_YEN,          0x0d},  // Yen |
   {RETROK_BACKSPACE,    0x0e},  // BS
   {RETROK_TAB,          0x0f},  // TAB
   {RETROK_q,            0x10},  // q Q
@@ -58,8 +59,8 @@ static const LRKCNV lrcnv101[] = {
   {RETROK_i,            0x17},  // i I
   {RETROK_o,            0x18},  // o O
   {RETROK_p,            0x19},  // p P
-  {RETROK_TILDE,        0x1a},  // @ ~ (M)
-  {RETROK_LEFTBRACKET,  0x1b},  // [ {
+  {RETROK_LEFTBRACKET,  0x1a},  // @ ~ (M)
+  {RETROK_RIGHTBRACKET, 0x1b},  // [ {
   {RETROK_RETURN,       0x1c},  // Enter
   {RETROK_LCTRL,        0x74},  // CTRL
   {RETROK_CAPSLOCK,     0x71},  // CAPS
@@ -74,7 +75,7 @@ static const LRKCNV lrcnv101[] = {
   {RETROK_l,            0x25},  // l L
   {RETROK_SEMICOLON,    0x26},  // ; +
   {RETROK_QUOTE,        0x27},  // : *
-  {RETROK_RIGHTBRACKET, 0x28},  // ] }
+  {RETROK_BACKSLASH,    0x28},  // ] }
   {RETROK_LSHIFT,       0x70},  // LShift
   {RETROK_z,            0x29},  // z Z
   {RETROK_x,            0x2a},  // x X
@@ -86,20 +87,20 @@ static const LRKCNV lrcnv101[] = {
   {RETROK_COMMA,        0x30},  // , <
   {RETROK_PERIOD,       0x31},  // . >
   {RETROK_SLASH,        0x32},  // / ?
-  // _ _
+  {/*RETROK_SYSREQ*/RETROK_RCTRL,       0x33},  // _ _ (L2?menu open?)
   {RETROK_RSHIFT,       0x75},  // RShift
-  // Kana
+  {RETROK_KATAHIRA,     0x72},  // ‚©‚È(?)
   {RETROK_LSUPER,       0x70},  // LSuper
-  {RETROK_RCTRL,        0x33},  // GRPH
-  {RETROK_LALT,         0x51},  // NFER
+  {RETROK_LALT,         0x73},  // GRPH
+  {RETROK_DONTCONV,     0x51},  // NFER
   {RETROK_SPACE,        0x34},  // Space
-  {RETROK_RALT,         0x35},  // XFER
+  {RETROK_CONVERT,      0x35},  // XFER
   {RETROK_RSUPER,       0x78},  // RSuper
   {RETROK_MENU,         0x79},  // Menu
   {RETROK_INSERT,       0x38},  // INS
   {RETROK_DELETE,       0x39},  // DEL
-  {RETROK_PAGEUP,       0x36},  // ROLLUP
-  {RETROK_PAGEDOWN,     0x37},  // ROLLDOWN
+  {RETROK_PAGEDOWN,     0x36},  // ROLLUP
+  {RETROK_PAGEUP,       0x37},  // ROLLDOWN
   {RETROK_UP,           0x3a},  // Up
   {RETROK_LEFT,         0x3b},  // Left
   {RETROK_RIGHT,        0x3c},  // Right
@@ -121,7 +122,7 @@ static const LRKCNV lrcnv101[] = {
   {RETROK_KP3,          0x4c},  // KP3
   {RETROK_KP_EQUALS,    0x4d},  // KP= (N)
   {RETROK_KP0,          0x4e},  // KP0
-  // KP,
+  {RETROK_KP_COMMA,     0x4f},  // KP,
   {RETROK_KP_PERIOD,    0x50},  // KP. (M)
   {RETROK_KP_ENTER,     0x1c},  // KPEnter
 };
@@ -129,8 +130,9 @@ static const LRKCNV lrcnv101[] = {
 /* 106 keyboard key table */
 static const LRKCNV lrcnv106[] = {
   // test result on Linux Twocode/caNnotpush/Miss/Different
+  {RETROK_BREAK,        0x60},  // STOP
   {RETROK_PAUSE,        0x60},  // STOP
-  {RETROK_PRINT,        0x61},  // COPY
+  {RETROK_COPY,         0x61},  // COPY
   {RETROK_F1,           0x62},  // f.1
   {RETROK_F2,           0x63},  // f.2
   {RETROK_F3,           0x64},  // f.3
@@ -154,8 +156,8 @@ static const LRKCNV lrcnv106[] = {
   {RETROK_9,            0x09},  // 9 )
   {RETROK_0,            0x0a},  // 0 0
   {RETROK_MINUS,        0x0b},  // - =
-  {RETROK_EQUALS,       0x0c},  // ^ `
-  {RETROK_BACKSLASH,    0x0d},  // Yen | (M)
+  {RETROK_CARET,        0x0c},  // ^ `
+  {RETROK_YEN,          0x0d},  // Yen | (M)
   {RETROK_BACKSPACE,    0x0e},  // BS
   {RETROK_TAB,          0x0f},  // TAB
   {RETROK_q,            0x10},  // q Q
@@ -183,7 +185,7 @@ static const LRKCNV lrcnv106[] = {
   {RETROK_k,            0x24},  // k K
   {RETROK_l,            0x25},  // l L
   {RETROK_SEMICOLON,    0x26},  // ; +
-  {RETROK_QUOTE,        0x27},  // : *
+  {RETROK_COLON,        0x27},  // : *
   {RETROK_RIGHTBRACKET, 0x28},  // ] }
   {RETROK_LSHIFT,       0x70},  // LShift
   {RETROK_z,            0x29},  // z Z
@@ -196,20 +198,20 @@ static const LRKCNV lrcnv106[] = {
   {RETROK_COMMA,        0x30},  // , <
   {RETROK_PERIOD,       0x31},  // . >
   {RETROK_SLASH,        0x32},  // / ?
-  {2,      0x33},       // _ _ (L2?menu open?)
+  {/*RETROK_BACKSLASH*/RETROK_RCTRL,    0x33},  // _ _ (L2?menu open?)
   {RETROK_RSHIFT,       0x75},  // RShift
-  // Kana
+  {RETROK_KATAHIRA,     0x72},  // ‚©‚È(?)
   {RETROK_LSUPER,       0x70},  // LSuper
-  {RETROK_RCTRL,        0x33},  // GRPH
-  {RETROK_LALT,         0x51},  // NFER
+  {RETROK_LALT,         0x73},  // GRPH
+  {RETROK_DONTCONV,     0x51},  // NFER
   {RETROK_SPACE,        0x34},  // Space
-  {RETROK_RALT,         0x35},  // XFER
+  {RETROK_CONVERT,      0x35},  // XFER
   {RETROK_RSUPER,       0x78},  // RSuper
   {RETROK_MENU,         0x79},  // Menu
   {RETROK_INSERT,       0x38},  // INS
   {RETROK_DELETE,       0x39},  // DEL
-  {RETROK_PAGEUP,       0x36},  // ROLLUP
-  {RETROK_PAGEDOWN,     0x37},  // ROLLDOWN
+  {RETROK_PAGEDOWN,     0x36},  // ROLLUP
+  {RETROK_PAGEUP,       0x37},  // ROLLDOWN
   {RETROK_UP,           0x3a},  // Up
   {RETROK_LEFT,         0x3b},  // Left
   {RETROK_RIGHT,        0x3c},  // Right
@@ -231,7 +233,7 @@ static const LRKCNV lrcnv106[] = {
   {RETROK_KP3,          0x4c},  // KP3
   {RETROK_KP_EQUALS,    0x4d},  // KP= (N)
   {RETROK_KP0,          0x4e},  // KP0
-  // KP,
+  {RETROK_KP_COMMA,     0x4f},  // KP,
   {RETROK_KP_PERIOD,    0x50},  // KP. (M)
   {RETROK_KP_ENTER,     0x1c},  // KPEnter
 };
