@@ -88,7 +88,7 @@ static const LRKCNV lrcnv101[] = {
   {RETROK_PERIOD,       0x31},  // . >
   {RETROK_SLASH,        0x32},  // / ?
   {/*RETROK_SYSREQ*/RETROK_RCTRL,       0x33},  // _ _ (L2?menu open?)
-  {RETROK_RSHIFT,       0x75},  // RShift
+  {RETROK_RSHIFT,       0x70/*0x75*/},  // RShift
   {RETROK_KATAHIRA,     0x72},  // ‚©‚È(?)
   {RETROK_LSUPER,       0x70},  // LSuper
   {RETROK_LALT,         0x73},  // GRPH
@@ -199,7 +199,7 @@ static const LRKCNV lrcnv106[] = {
   {RETROK_PERIOD,       0x31},  // . >
   {RETROK_SLASH,        0x32},  // / ?
   {/*RETROK_BACKSLASH*/RETROK_RCTRL,    0x33},  // _ _ (L2?menu open?)
-  {RETROK_RSHIFT,       0x75},  // RShift
+  {RETROK_RSHIFT,       0x70/*0x75*/},  // RShift
   {RETROK_KATAHIRA,     0x72},  // ‚©‚È(?)
   {RETROK_LSUPER,       0x70},  // LSuper
   {RETROK_LALT,         0x73},  // GRPH
